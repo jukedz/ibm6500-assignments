@@ -1,0 +1,435 @@
+---
+title: "M05-Visualizing Data with Tables for MSDM CEP"
+subtitle: "Reflection essay and a presentation-ready gt + gtExtras table"
+author: "Julie Diaz"
+date: '`r format(Sys.time())`'
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 2
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    code-link: true
+    code-fold: true
+    code-summary: "Show the code"
+    code-overflow: wrap
+    code-tools: true
+    code-copy: true
+    highlight-style: github
+    embed-resources: true
+    smooth-scroll: true
+    theme:
+      light: cosmo
+      dark: darkly
+editor: visual
+execute:
+  freeze: auto
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+# Packages used in this report
+library(gt)        # build the table
+library(gtExtras)  # themes and inline plots inside the table
+library(dplyr)     # data wrangling
+library(tidyr)     # complete() for filling empty hours
+
+# pizzaplace ships with the gt package: one row per pizza sold in 2015
+data("pizzaplace", package = "gt")
+```
+
+# Introduction
+
+This report reflects on what I learned in **Module 5: Visualizing Data with Tables** and applies it to my MSDM Culminating Experience Project (CEP). Each section starts with the *prompt* from the assignment so the reader can see exactly which question is being answered, followed by my response.
+
+::: callout-note
+## About the data
+
+My CEP Analytics Objective focuses on **website SEO and GA4 conversion paths** for the CPP Farm Store. Our team does not have the GA4 export from the client yet, so, as the assignment allows, I used the built-in `pizzaplace` dataset from the **gt** package. It is transaction data from a small food retailer, which makes it a close stand-in for the Farm Store: the same table design can be reused once our real data arrives.
+:::
+
+# Reflection Essay
+
+## What I Learned from the Videos
+
+> **Prompt:** Summarize what you learned from the videos you watched.
+
+I watched four videos that built on each other, moving from gt basics to design principles to gtExtras shortcuts. @tbl-videos lists them, and the tabs below summarize what I took from each one.
+
+| \# | Video | Presenter | Main focus |
+|------------------|-------------------------|------------------|------------------|
+| 1 | *Making Beautiful Tables with {gt}* | Rich Iannone (Posit) | Building a polished table step by step |
+| 2 | *Make a Table with the gt Package* | Emmanuel Teitelbaum | The "grammar of tables" and exporting |
+| 3 | *Making High-Quality Tables in R with the gt Package* | Tom Mock (R for the Rest of Us podcast) | Design principles for effective tables |
+| 4 | *Create Fantastic Tables using gtExtras in R* | Greg Martin | Quick summaries, inline plots, and themes |
+
+: Videos watched for Module 5 {#tbl-videos}
+
+::: panel-tabset
+### 1. Rich Iannone
+
+Rich Iannone, who created gt, built a table from the **palmerpenguins** data one layer at a time. My main takeaways:
+
+-   **Wrangle first, then table.** He used `group_by()` and `summarize()` from dplyr to create a small summary tibble *before* piping it into `gt()`, then used `rowname_col` to put the grouping variable (species) into the **stub**.
+-   **Readable labels.** `cols_label()` renames columns, and wrapping a label in `md()` lets you use Markdown, such as a line break to put units on a second line and keep the table narrow.
+-   **Smart number formatting.** `fmt_number()` controls decimals and separators, and its `scale_by` argument converts units while formatting (for example, grams to kilograms by scaling by 1/1000).
+-   **Context in the footer.** `tab_source_note()` cites the data, while `tab_footnote()` points to specific cells or labels, and gt numbers multiple footnotes automatically.
+-   **Styling.** `tab_style()` emphasizes rows or cells, `opt_table_font()` adds custom fonts, and `data_color()` turns a numeric column into a heatmap.
+
+### 2. Emmanuel Teitelbaum
+
+This video explained the idea behind gt: a **"grammar of tables,"** similar to the grammar of graphics in ggplot2. Every table has six parts:
+
+1.  **Table header** (title and subtitle, via `tab_header()`)
+2.  **Column labels** (via `cols_label()`)
+3.  **Table body** (the data values)
+4.  **Table footer** (source notes and footnotes)
+5.  **Stub** (row labels on the left)
+6.  **Stub head** (the label above the stub, via `tab_stubhead()`)
+
+He also showed `fmt_currency()` with `currency = "USD"` (and `subunits = FALSE` to hide cents), Markdown in source notes, `cols_width()` and `cols_align()` for layout, `tab_options()` for borders and grid lines, and `gtsave()` to export a finished table as a PNG[^1].
+
+### 3. Tom Mock
+
+Tom Mock walked through **Jon Schwabish's principles** for better tables and showed how to apply each one in gt:
+
+-   **Offset the headers** from the body so the structure is obvious.
+-   **Use subtle dividers** instead of heavy grid lines, to cut visual noise.
+-   **Highlight outliers** with conditional color so important values stand out.
+-   **Align correctly:** right-align numbers so decimals line up, and left-align text.
+-   **Choose sensible precision:** too many decimals hide the story.
+-   **Group similar data** so comparisons within and between groups are easy.
+
+He then introduced **gtExtras**, which he wrote as a set of wrappers around gt. One function applies a full publication theme (such as The New York Times or FiveThirtyEight), and others embed sparklines, bar charts, and percent bars directly into cells.
+
+### 4. Greg Martin
+
+Greg Martin gave a quick, practical gtExtras demo using the **mtcars** and **iris** datasets:
+
+-   `gt_plt_summary()` creates an instant overview of a whole dataset, with distributions, means, medians, and missing values.
+-   To draw a small chart in a cell, you first collapse each group's values into a **list column** during the summarize step, then pass that column to `gt_plt_dist()`.
+-   A single theme call, such as `gt_theme_guardian()`, restyles the whole table. Other options include `gt_theme_538()`, `gt_theme_espn()`, `gt_theme_nytimes()`, and `gt_theme_excel()`.
+:::
+
+[^1]: The current function name is `gtsave()`. It can save a table as HTML, PNG, PDF, or Word, which makes it easy to drop a table into slides.
+
+Taken together, the videos taught me three layers of table building: **structure** (the six parts from Teitelbaum), **formatting and styling** (Iannone's step by step workflow), and **design judgment** (Mock's principles), with gtExtras as the shortcut that makes all three faster (Mock and Martin).
+
+## What I Liked About gt and gtExtras
+
+> **Prompt:** What did you like about the gt and gtExtra packages demonstrated in the videos?
+
+-   **It works like ggplot2.** Because gt follows a "grammar of tables," I could guess function names once I knew the six parts: `tab_*()` adds parts, `cols_*()` changes columns, and `fmt_*()` formats values. Every function takes a table and returns a table, so the code reads top to bottom like a recipe.
+-   **It fits the tidyverse workflow I already know.** Iannone's approach of grouping and summarizing with dplyr first, then piping into `gt()`, is exactly how I built my own table below.
+-   **Formatting matches business conventions.** One line of `fmt_currency()` turns `220053.1` into `$220,053.10`, which is what a client expects to see. I also liked the `scale_by` trick in `fmt_number()`, because it saves an extra wrangling step.
+-   **Good design is built in.** gt already right-aligns numbers, which matches Mock's alignment advice, and `data_color()` makes his "highlight outliers" principle a one-line step. The package nudges me toward Schwabish's principles without extra work.
+-   **Inline charts.** This was my favorite part. `gt_plt_sparkline()`, `gt_plt_bar_pct()`, and `gt_plt_dist()` let one row show a number *and* its trend or spread. Martin's list-column trick made it click for me.
+-   **Themes save time.** Mock mentioned that a publication-quality theme can take dozens of lines of `tab_style()` code, while `gt_theme_538()` or `gt_theme_guardian()` does it in one line.
+-   **Reproducibility.** Because the table is code, it updates when the data changes. For our CEP, we can refresh the table every time the Farm Store sends new data.
+
+::: callout-note
+## How I applied the videos in my table
+
+| Lesson from the videos | Where it shows up in @tbl-category |
+|----------------------------------|--------------------------------------|
+| Group and summarize before `gt()` (Iannone) | `group_by(type)` then `summarise()` |
+| Stub and stub head (Teitelbaum) | `rowname_col = "type"` and `tab_stubhead()` |
+| Currency formatting (Teitelbaum) | `fmt_currency()` with 2 decimals |
+| Heatmap coloring (Iannone) and highlighting (Mock) | `data_color()` on Total Revenue |
+| Grouping with subtle dividers (Mock) | Three spanners with a light theme |
+| List column plus `gt_plt_dist()` (Martin) | Price Spread boxplot column |
+| One-line theme (Mock, Martin) | `gt_theme_538()` |
+:::
+
+## How Tables Complement Charts
+
+> **Prompt:** How do tables complement charts for data visualization?
+
+Charts are best at showing ***shape***: trends, patterns, and comparisons the eye can catch in a second. Tables are best at showing ***precision***: the exact value a manager might quote in a meeting or use in a budget. The two work together:
+
+| Charts are strong at...           | Tables are strong at...                 |
+|-----------------------------------|-----------------------------------------|
+| Spotting trends and outliers fast | Looking up an exact value               |
+| Comparing a few series visually   | Comparing many measures at once         |
+| Telling one main story            | Serving several readers with one object |
+| Emotional, persuasive impact      | Credibility and auditability            |
+
+: Charts vs. tables at a glance {#tbl-chart-vs-table}
+
+As @tbl-chart-vs-table shows, a chart answers "*what is happening?*" and a table answers "*by exactly how much?*". The videos showed that the line between the two is blurring. Mock's highlighting principle and Iannone's `data_color()` heatmaps bring a chart's visual cues into a table, and gtExtras goes further by putting actual sparklines and distribution plots inside table cells. A well designed table can give the reader the trend and the exact number side by side.
+
+## When I Would Choose a Table Over a Chart
+
+> **Prompt:** Under what circumstances would you prefer to use tables rather than charts to visualize data?
+
+I would choose a table when:
+
+-   The audience needs **exact numbers**, such as revenue, prices, or conversion rates used for decisions or budgets.
+-   I need to show **several measures with different units** at once (counts, dollars, and percentages in one view).
+-   The reader will **look things up** rather than read a single story, for example "how did *my* product category do?"
+-   The data has **natural groups** to compare, which Mock pointed out tables handle well through row groups and spanners.
+-   The dataset is **small**, such as four product categories, where a chart would add ink without adding insight.
+-   The output is an **appendix or reference** in a written report that people will come back to later.
+
+::: callout-tip
+## My rule of thumb
+
+If the key message is a *pattern*, lead with a chart. If the key message is a *number*, lead with a table. If it is both, use a gtExtras table with inline charts.
+:::
+
+# CEP Table: Descriptive Statistics with gt and gtExtras
+
+> **Prompt:** Use the data for your MSDM CEP (or the `pizzaplace` dataset). Pick some variables relevant to your Analytics Objectives and share some descriptive statistics using gt and gtExtras functions together to show numbers and small charts in one table.
+
+## Variables and Why They Matter
+
+My Analytics Objective asks whether online advertising (Google Shopping ads) could turn more website traffic into purchases. Before a store can advertise, it needs to know **which products earn the most** and **when customers buy**. I selected these variables:
+
+| Variable | Description | Why it matters for my AO |
+|------------------|---------------------------|---------------------------|
+| `type` | Pizza category (classic, chicken, supreme, veggie) | Stand-in for Farm Store product categories to feature in Shopping ads |
+| `price` | Price of each pizza sold | Revenue, average price, and price spread per category |
+| `id` | Order ID | Counts unique orders (a proxy for conversions) |
+| `date` | Date of sale | Monthly trend and day-of-week patterns |
+| `time` | Time of sale | Hour-of-day pattern for ad scheduling |
+
+: Variables selected from the pizzaplace dataset {#tbl-variables}
+
+## Data Wrangling
+
+Before piping into `gt()`, I grouped the data by a categorical variable (pizza `type`) and summarized each group. I also built **list columns** that hold every value for a group, which gtExtras needs to draw sparklines and distribution plots.
+
+```{r}
+#| label: wrangle
+
+pizza <- pizzaplace |>
+  mutate(
+    date    = as.Date(date),
+    month   = as.integer(format(date, "%m")),
+    hour    = as.integer(substr(time, 1, 2)),
+    weekday = factor(weekdays(date),
+                     levels = c("Monday", "Tuesday", "Wednesday", "Thursday",
+                                "Friday", "Saturday", "Sunday")),
+    type    = tools::toTitleCase(type)
+  )
+
+# Monthly revenue per category, stored as a list for the sparkline
+monthly_rev <- pizza |>
+  group_by(type, month) |>
+  summarise(rev = sum(price), .groups = "drop") |>
+  arrange(type, month) |>
+  group_by(type) |>
+  summarise(monthly_trend = list(rev), .groups = "drop")
+
+# One row per category
+type_summary <- pizza |>
+  group_by(type) |>
+  summarise(
+    pizzas_sold = n(),
+    orders      = n_distinct(id),
+    revenue     = sum(price),
+    avg_price   = mean(price),
+    price_dist  = list(price),
+    .groups     = "drop"
+  ) |>
+  mutate(
+    rev_share = revenue / sum(revenue) * 100,
+    share_bar = rev_share
+  ) |>
+  left_join(monthly_rev, by = "type") |>
+  arrange(desc(revenue)) |>
+  select(type, pizzas_sold, orders, revenue, avg_price,
+         rev_share, share_bar, monthly_trend, price_dist)
+
+# One row per weekday, with an hourly order pattern for the sparkline
+hourly_orders <- pizza |>
+  distinct(id, weekday, hour) |>
+  count(weekday, hour, name = "n_orders") |>
+  complete(weekday, hour = 9:23, fill = list(n_orders = 0)) |>
+  arrange(weekday, hour) |>
+  group_by(weekday) |>
+  summarise(hourly = list(n_orders), .groups = "drop")
+
+weekday_summary <- pizza |>
+  group_by(weekday) |>
+  summarise(
+    orders      = n_distinct(id),
+    pizzas_sold = n(),
+    revenue     = sum(price),
+    .groups     = "drop"
+  ) |>
+  mutate(aov = revenue / orders) |>
+  left_join(hourly_orders, by = "weekday") |>
+  mutate(weekday = as.character(weekday))
+```
+
+## The Tables
+
+::: panel-tabset
+### Sales by Category
+
+```{r}
+#| label: tbl-category
+#| tbl-cap: "Pizza Place 2015 sales performance by category"
+
+type_summary |>
+  gt(rowname_col = "type") |>
+  # Titles and subtitles
+  tab_header(
+    title    = md("**Which product categories drive revenue?**"),
+    subtitle = "Pizza Place full-year 2015 sales, ranked by total revenue"
+  ) |>
+  # Stub head label
+  tab_stubhead(label = "Pizza Category") |>
+  # Friendly column names
+  cols_label(
+    pizzas_sold   = "Pizzas Sold",
+    orders        = "Orders",
+    revenue       = "Total Revenue",
+    avg_price     = "Avg. Price",
+    rev_share     = "Share",
+    share_bar     = "Share of Revenue",
+    monthly_trend = "Monthly Revenue (Jan to Dec)",
+    price_dist    = "Price Spread"
+  ) |>
+  # Spanner column labels
+  tab_spanner(label = "Sales Volume",
+              columns = c(pizzas_sold, orders)) |>
+  tab_spanner(label = "Revenue Performance",
+              columns = c(revenue, avg_price, rev_share, share_bar)) |>
+  tab_spanner(label = "Trends and Distribution",
+              columns = c(monthly_trend, price_dist)) |>
+  # Number formats: 2 decimals and currency signs
+  fmt_number(columns = c(pizzas_sold, orders), decimals = 0) |>
+  fmt_currency(columns = c(revenue, avg_price), currency = "USD", decimals = 2) |>
+  fmt_percent(columns = rev_share, decimals = 2, scale_values = FALSE) |>
+  # gtExtras theme first, so the colors below are not overwritten
+  gt_theme_538() |>
+  # Small charts inside cells (gtExtras)
+  gt_plt_bar_pct(column = share_bar, scaled = TRUE,
+                 fill = "#C0392B", background = "#F5D5D0") |>
+  gt_plt_sparkline(column = monthly_trend, type = "shaded",
+                   same_limit = TRUE, label = FALSE,
+                   palette = c("#1B4F72", "black", "#C0392B", "#27AE60", "#D6EAF8")) |>
+  gt_plt_dist(column = price_dist, type = "boxplot",
+              line_color = "black", fill_color = "#F5B7B1") |>
+  # Color a numeric column
+  data_color(columns = revenue,
+             palette = c("#FDEDEC", "#E6B0AA", "#C0392B")) |>
+  # Footnotes
+  tab_footnote(
+    footnote  = "Unique order IDs that included at least one pizza from the category. One order can include several categories.",
+    locations = cells_column_labels(columns = orders)
+  ) |>
+  tab_footnote(
+    footnote  = "Average price per pizza sold, across all sizes (S to XXL).",
+    locations = cells_column_labels(columns = avg_price)
+  ) |>
+  tab_footnote(
+    footnote  = "Sparkline y-axes share the same scale, so heights can be compared across rows. Red dot = lowest month, green dot = highest month.",
+    locations = cells_column_labels(columns = monthly_trend)
+  ) |>
+  # Source note
+  tab_source_note(
+    source_note = md("**Source:** `pizzaplace` dataset from the **gt** R package (49,574 pizzas; 21,350 orders; Jan 1 to Dec 31, 2015). Table: Julie Diaz, MSDM CEP.")
+  ) |>
+  cols_align(align = "center", columns = c(monthly_trend, price_dist)) |>
+  cols_width(share_bar ~ px(120), monthly_trend ~ px(150))
+```
+
+### Sales by Day of Week
+
+```{r}
+#| label: tbl-weekday
+#| tbl-cap: "Pizza Place 2015 orders and revenue by day of week"
+
+weekday_summary |>
+  gt(rowname_col = "weekday") |>
+  tab_header(
+    title    = md("**When do customers buy?**"),
+    subtitle = "Orders, revenue, and hourly order pattern by day of week, 2015"
+  ) |>
+  tab_stubhead(label = "Day of Week") |>
+  cols_label(
+    orders      = "Orders",
+    pizzas_sold = "Pizzas Sold",
+    revenue     = "Total Revenue",
+    aov         = "Avg. Order Value",
+    hourly      = "Orders by Hour (9 AM to 11 PM)"
+  ) |>
+  tab_spanner(label = "Volume", columns = c(orders, pizzas_sold)) |>
+  tab_spanner(label = "Revenue", columns = c(revenue, aov)) |>
+  fmt_number(columns = c(orders, pizzas_sold), decimals = 0) |>
+  fmt_currency(columns = c(revenue, aov), currency = "USD", decimals = 2) |>
+  gt_theme_538() |>
+  gt_plt_sparkline(column = hourly, type = "default",
+                   same_limit = TRUE, label = FALSE) |>
+  # Color the rows by revenue (gtExtras)
+  gt_color_rows(columns = revenue,
+                palette = c("#FDEDEC", "#C0392B")) |>
+  tab_footnote(
+    footnote  = "Total revenue divided by the number of unique orders placed that day of the week.",
+    locations = cells_column_labels(columns = aov)
+  ) |>
+  tab_source_note(
+    source_note = md("**Source:** `pizzaplace` dataset from the **gt** R package. Table: Julie Diaz, MSDM CEP.")
+  ) |>
+  cols_align(align = "center", columns = hourly)
+```
+
+### Key Numbers
+
+-   **Total 2015 revenue:** \$817,860.05 from 49,574 pizzas and 21,350 orders
+-   **Top category:** Classic, with \$220,053.10 (26.91% of revenue), driven by volume rather than price
+-   **Highest average price:** Chicken, at \$17.73 per pizza
+-   **Busiest day:** Friday, with \$136,073.90 (16.64% of revenue)
+-   **Busiest hours:** lunch (12 PM to 1 PM) and dinner (5 PM to 6 PM)
+:::
+
+## What the Tables Show
+
+Reading @tbl-category, the four categories are **surprisingly balanced**: each earns between about 24% and 27% of revenue. Classic pizzas lead in both volume and revenue even though they have the *lowest* average price (\$14.78), while Chicken pizzas sell fewer units but at the *highest* average price (\$17.73). The monthly sparklines are almost flat, which tells me demand is steady all year rather than seasonal.
+
+@tbl-weekday adds the "when." Friday is clearly the strongest day and Sunday the weakest, and the hourly sparklines show two peaks: **lunch and dinner**. Average order value barely changes across the week (about \$38 every day), so the difference between days comes from *more orders*, not bigger ones.
+
+::: callout-important
+## Translating this to the CPP Farm Store
+
+For a Google Shopping campaign, these two tables answer the first two questions a marketer asks:
+
+1.  **What should we advertise?** Categories with high volume (traffic builders) versus categories with high price (margin builders).
+2.  **When should ads run?** Schedule and budget ads around peak days and hours instead of spending evenly.
+:::
+
+# Why This Table Belongs in My CEP Report
+
+> **Prompt:** Explain why the table is worth adding to your MSDM project written report or presentation slides.
+
+This table is worth including for four reasons:
+
+1.  **It answers a client question in one slide.** The Farm Store manager can see which categories earn the most, how steady sales are, and how prices vary, without flipping between several charts.
+2.  **It combines precision and pattern.** Exact dollar amounts support budget decisions, while the inline sparklines and bars give the visual story at a glance.
+3.  **It sets the baseline for my AO.** Before recommending Google Shopping ads, we need to know which products to feature and when customers buy. This table is that baseline, and the same code can be pointed at our GA4 export (for example, swapping pizza category for traffic source or landing page).
+4.  **It is reproducible.** Because it is built with code in Quarto, the team can refresh it each time the client sends new data, which keeps our report consistent through Summer 2027.
+
+# Appendix {.appendix}
+
+## GitHub Links
+
+-   **GitHub repository:** <https://github.com/jukedz/ibm6500-assignments/tree/main/M04-Customizable-Tables>
+-   **Published report (GitHub Pages):** <https://jukedz.github.io/ibm6500-assignments/M04-Customizable-Tables/>
+
+## Session Information
+
+```{r}
+#| label: session-info
+#| code-fold: false
+
+sessionInfo()
+```
