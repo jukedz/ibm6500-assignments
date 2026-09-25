@@ -100,18 +100,17 @@ Wrap up and next steps
 
 
 ### GitHub Links
-
 ::: {.link-card}
 **📁 GitHub Repository**  
-<https://github.com/jukedz/IC-W5-1-Class-Participation>
+<https://github.com/jukedz/ibm6500-assignments/tree/main/IC-W5-1%20(924)-Class%20Participation>
 :::
 
 ::: {.link-card}
 **🌐 Published Page (GitHub Pages)**  
-<https://jukedz.github.io/IC-W5-1-Class-Participation/IC-W5-1_Class_Notes.html>
+<https://jukedz.github.io/ibm6500-assignments/IC-W5-1%20(924)-Class%20Participation/IC-W5-1_Class_Notes.html>
 :::
 
 ::: {.link-card}
 **📄 Source File (QMD)**  
-<https://github.com/jukedz/IC-W5-1-Class-Participation/blob/main/IC-W5-1_Class_Notes.qmd>
+<https://github.com/jukedz/ibm6500-assignments/blob/main/IC-W5-1%20(924)-Class%20Participation/IC-W5-1_Class_Notes.qmd>
 :::
