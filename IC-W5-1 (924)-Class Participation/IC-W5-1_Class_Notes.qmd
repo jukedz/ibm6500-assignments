@@ -1,0 +1,117 @@
+---
+title: "Class Notes for Week 5"
+subtitle: "IBM/ITP 6300 · Retailing in the Digital Economy"
+author: "Julie"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 1
+    toc-location: right-body
+    embed-resources: true
+    theme: litera
+    code-fold: true
+    code-tools: true
+    smooth-scroll: true
+    highlight-style: pygments
+execute:
+  freeze: auto
+---
+
+```{=html}
+<style>
+  :root {
+    --pink-dark: #c2185b;
+    --pink-mid: #ec407a;
+    --pink-light: #fce4ec;
+    --pink-soft: #fff5f8;
+  }
+  body { background-color: var(--pink-soft); }
+  #title-block-header {
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 14px rgba(194, 24, 91, 0.15);
+  }
+  #title-block-header .title { color: #ffffff; font-weight: 700; }
+  #title-block-header .subtitle,
+  #title-block-header .quarto-title-meta-heading,
+  #title-block-header .quarto-title-meta-contents { color: #fff0f5; }
+  h2 {
+    color: var(--pink-dark);
+    border-bottom: 3px solid var(--pink-mid);
+    padding-bottom: 0.3rem;
+    margin-top: 2.5rem;
+  }
+  h3 { color: var(--pink-mid); }
+  a { color: var(--pink-dark); }
+  a:hover { color: var(--pink-mid); }
+  #TOC, #quarto-margin-sidebar {
+    background-color: #ffffff;
+    border-left: 4px solid var(--pink-mid);
+    border-radius: 10px;
+    padding: 0.75rem;
+  }
+  .sidebar nav[role="doc-toc"] ul > li > a.active { color: var(--pink-dark); border-left-color: var(--pink-dark); }
+  table { background-color: #ffffff; border-radius: 8px; overflow: hidden; }
+  thead { background-color: var(--pink-light); color: var(--pink-dark); }
+  blockquote {
+    border-left: 5px solid var(--pink-mid);
+    background-color: var(--pink-light);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  .nav-tabs .nav-link.active { color: var(--pink-dark); border-top: 3px solid var(--pink-mid); }
+  .nav-tabs .nav-link { color: #ad1457; }
+  .key-term {
+    background-color: var(--pink-light);
+    color: var(--pink-dark);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+    .link-card {
+    background-color: #ffffff;
+    border: 2px solid var(--pink-light);
+    border-left: 6px solid var(--pink-mid);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+</style>
+## Class Overview
+
+::: {.callout-note icon="true"}
+## Today at a Glance
+- **Date:** Thursday, September 24, 2026 (Week 5)
+- **Course:** IBM/ITP 6300, Retailing in the Digital Economy
+- **Main topic:** Overview of next 5 Weeks 
+:::
+
+**Agenda for today**
+
+Announcements and housekeeping
+Lecture: *(Research tips for CEP, Syllabus Overview, and upcoming assignments)*
+Group presentations *(feedback submitted separately, not included here)*
+Wrap up and next steps
+💡 **Key quote or takeaway from the professor:** *(Managing Timelines & Upcoming Assignments)*
+
+
+
+### GitHub Links
+
+::: {.link-card}
+**📁 GitHub Repository**  
+<https://github.com/jukedz/IC-W5-1-Class-Participation>
+:::
+
+::: {.link-card}
+**🌐 Published Page (GitHub Pages)**  
+<https://jukedz.github.io/IC-W5-1-Class-Participation/IC-W5-1_Class_Notes.html>
+:::
+
+::: {.link-card}
+**📄 Source File (QMD)**  
+<https://github.com/jukedz/IC-W5-1-Class-Participation/blob/main/IC-W5-1_Class_Notes.qmd>
+:::
