@@ -1,0 +1,121 @@
+---
+title: "IC5-2: Consumer Panel Experience"
+subtitle: "Taking Surveys as a YouGov Panelist"
+author: "Julie Diaz"
+date: "October 2, 2026"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    number-sections: true
+    embed-resources: true
+    theme: cosmo
+    fig-align: center
+---
+
+# Overview
+
+For this assignment I joined **YouGov**, an online consumer panel that pays members in points for taking surveys. I registered on October 2, 2026, and completed three activities on my first day:
+
+1. The **Welcome survey** (about 5 minutes), a profiling survey for new members
+2. A short **Music survey**, a topic I chose myself
+3. A **TV show ratings** survey that fed YouGov's Ratings feature
+
+Taking surveys from the respondent's side of the screen let me see how a large research company designs questions, what felt natural, and what felt strange. Below I walk through the panel experience, the questions that stood out to me, and the lessons I plan to carry into my own research project.
+
+# Joining the Panel
+
+![YouGov confirmation screen after registering, with 500 starter points](images/01-account-created.png){#fig-account width=85%}
+
+Signing up was fast. YouGov immediately gave me 500 points as a welcome incentive and told me that future survey invitations would arrive by email (@fig-account). This is a smart retention move: an early reward makes a new member more likely to finish the first survey instead of abandoning the account.
+
+![YouGov dashboard showing the Welcome survey and a chat-style activity](images/02-dashboard.png){#fig-dashboard width=85%}
+
+The dashboard offered two starting activities: a traditional **Welcome survey** worth 1,000 points and a chat-style activity called **"What matters to you?"** (@fig-dashboard). Each card lists the format and estimated time, which sets expectations up front. Being honest about survey length is a simple way to build trust and reduce drop-off.
+
+# Questions That Stood Out
+
+I chose the following questions because each one made me pause while answering. Some felt odd or out of place, and others made me wonder why YouGov needed that information. Looking at them more closely, I found that most had a clear research purpose, even when it was not obvious to me as a respondent.
+
+## Forced Choice: "Would you rather..."
+
+![A forced-choice "Would you rather" item from the Welcome survey](images/03-would-you-rather.png){#fig-wyr width=90%}
+
+**Why I chose it:** My first reaction was that I wanted an option for *both*. Being appreciated for achievements and being appreciated for kindness are not opposites, and many people value both. The question forced me into a trade-off that did not feel real.
+
+**Why it was likely asked:** This is a deliberate **forced-choice** design. If YouGov asked me to rate each value separately on a scale, I (and most people) would probably rate both highly, and the data would not show much difference between respondents. Forcing a choice reveals *relative* preference, which is more useful for building a values or personality profile and segmenting panelists. The playful "Would you rather" framing also makes the welcome survey feel more like a game than a questionnaire.
+
+**What I would question:** Forced choice can frustrate respondents and add noise, since people who truly value both options may choose at random. The method only works when the options are meaningfully comparable.
+
+## Political Approval in a Welcome Survey
+
+![Presidential job approval question from the Welcome survey](images/04-approval.png){#fig-approval width=90%}
+
+**Why I chose it:** I was surprised to see a direct political question about the sitting President in a *welcome* survey, right after a lighthearted "would you rather" item. The tone shift was abrupt, and a political question is something many people consider personal.
+
+**Why it was likely asked:** Political polling is one of YouGov's core businesses, and presidential job approval is one of the most widely tracked questions in survey research. Capturing a new member's political leaning right away lets YouGov:
+
+- **Weight samples** so political studies match the general population
+- **Route panelists** into relevant political and public opinion studies
+- **Compare results over time**, since the wording follows the standard approval question used across many polls
+
+**Design notes:** The response scale is a balanced four-point scale (strongly and somewhat approve, somewhat and strongly disapprove) with **no neutral midpoint**, which pushes respondents to lean one way. "Not sure" is offered separately as an escape option. There is no "prefer not to answer" choice, which I think would make a sensitive question feel more respectful.
+
+## Letting the Respondent Choose the Topic
+
+![Question asking which topic I would like to answer questions about](images/05-topic-choice.png){#fig-topic width=90%}
+
+**Why I chose it:** After the Welcome survey, YouGov asked me which topic I wanted to answer questions about next (@fig-topic). I chose Music. This was not weird so much as unusual, since most surveys assign content rather than letting respondents pick.
+
+**Why it was likely asked:** People answer more carefully when they are interested in the topic, so letting panelists choose likely improves engagement, completion rates, and answer quality. It also tells YouGov what each member cares about, which helps target future invitations.
+
+**What I would question:** This approach creates **self-selection bias**. The people who answer the music survey will skew toward music fans, so the results will not represent the general population unless they are weighted. The question is also single-select with only five broad topics and no "Other" option.
+
+![Completion screen after the short Music survey](images/06-survey-complete.png){#fig-complete width=85%}
+
+The Music survey itself was very short and simply asked which artists I enjoy (@fig-complete). The quick, interest-based format seems designed to give new members an easy win and keep them coming back.
+
+## TV Show Ratings Grid
+
+![TV show rating grid with a thumbs scale and a "Not heard of" option](images/07-tv-ratings.png){#fig-tv width=90%}
+
+**Why I chose it:** The list of shows felt random. It mixed *Lip Sync Battle*, *Six Feet Under*, *90 Day Fiancé*, the original *Mission: Impossible* series, *Columbo*, and *The Neighbors*, which span several decades and genres. The rest of this survey followed the same format with other shows.
+
+**Why it was likely asked:** These ratings feed **YouGov Ratings**, the "Ratings" tab on the dashboard, which tracks the awareness and popularity of thousands of shows, brands, and public figures. Each panelist rates a small random set, and YouGov combines answers across many people. The randomness I noticed is intentional: it spreads coverage across a huge list without making any one survey too long.
+
+**Smart design choices:**
+
+- **"Not heard of"** separates *awareness* from *opinion*, so people are not forced to rate shows they do not know.
+- **One row unlocks at a time**, which reduces straightlining (clicking the same answer down a grid without reading).
+- The **visual thumbs scale** is quick, intuitive, and works well on mobile.
+
+**What I would question:** The thumbs have **no text labels**, so the sideways middle thumb is ambiguous. It could mean neutral, mixed feelings, or "I have not watched it." There is also no option for "heard of it but never watched," which is different from disliking a show.
+
+# Lessons for My Research Project
+
+Experiencing these surveys as a respondent gave me several practical lessons I can apply when designing my own questionnaire.
+
+1. **Every question needs a clear purpose.** Questions that felt odd to me usually had a strong business reason behind them. In my own survey, I should be able to explain how each question connects to my research objectives, and cut anything I cannot justify.
+
+2. **Use forced choice deliberately.** Forced choice produces sharper data about priorities, but it can frustrate respondents. I will only use it when the options are truly comparable, and I will consider adding a "both equally" option when that is a realistic answer.
+
+3. **Place sensitive questions carefully and offer an opt-out.** The political question felt jarring early in a welcome survey. I will place sensitive items later, after building trust, and include a "prefer not to answer" option.
+
+4. **Use standard wording when comparing to benchmarks.** YouGov's approval question uses established wording so results can be compared across polls and over time. If my project compares results to existing research, I should reuse validated question wording instead of writing my own.
+
+5. **Separate awareness from attitude.** The "Not heard of" option kept unfamiliar items from producing meaningless ratings. When I ask respondents to evaluate brands or products, I will measure awareness first.
+
+6. **Label every scale point.** The unlabeled thumbs scale showed me how easily icons can be misread. I will use clear text labels so every respondent interprets the scale the same way.
+
+7. **Reduce respondent fatigue.** Short surveys, honest time estimates, and grids broken into one row at a time all kept me engaged. I will keep my survey concise, state the expected time up front, and avoid long matrix questions.
+
+8. **Watch for self-selection bias.** Letting people choose topics improves engagement but shapes who ends up in the sample. When I recruit participants, I need to think about who is likely to respond and whether that skews my conclusions.
+
+# Conclusion
+
+Joining YouGov showed me that a consumer panel is carefully engineered on both sides: rewards and quick wins keep members engaged, while profiling questions let the company sort, weight, and target panelists for its clients. Questions that felt strange as a respondent made much more sense once I thought about them as a researcher. The biggest takeaway for my own project is that good questionnaire design balances the data the researcher needs with an experience that feels clear, fair, and respectful to the person answering.
+
+# Appendix: GitHub Links {.appendix .unnumbered}
+
+- **GitHub repository:** <https://github.com/jukedz/ibm6500-assignments/tree/main/IC5-2-Consumer-Panel>
+- **GitHub Pages site:** <https://jukedz.github.io/ibm6500-assignments/IC5-2-Consumer-Panel/Diaz,%20Julie-IC5-2-Consumer_Panel_Experience.html>
