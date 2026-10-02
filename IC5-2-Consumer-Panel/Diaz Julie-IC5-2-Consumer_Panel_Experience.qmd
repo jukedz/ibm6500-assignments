@@ -118,4 +118,4 @@ Joining YouGov showed me that a consumer panel is carefully engineered on both s
 # Appendix: GitHub Links {.appendix .unnumbered}
 
 - **GitHub repository:** <https://github.com/jukedz/ibm6500-assignments/tree/main/IC5-2-Consumer-Panel>
-- **GitHub Pages site:** <https://jukedz.github.io/ibm6500-assignments/IC5-2-Consumer-Panel/Diaz,%20Julie-IC5-2-Consumer_Panel_Experience.html>
+- **GitHub Pages site:** <https://jukedz.github.io/ibm6500-assignments/IC5-2-Consumer-Panel/Diaz%20Julie-IC5-2-Consumer_Panel_Experience.html>
