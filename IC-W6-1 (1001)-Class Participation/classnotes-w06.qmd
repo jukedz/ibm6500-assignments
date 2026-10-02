@@ -1,0 +1,200 @@
+---
+title: "Class notes for Week 06"
+author: "Julie"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-expand: 1
+    toc-location: right
+    embed-resources: true
+    theme: litera
+    smooth-scroll: true
+---
+
+```{=html}
+<style>
+  :root {
+    --pink-dark: #c2185b;
+    --pink-mid: #ec407a;
+    --pink-light: #fce4ec;
+    --pink-soft: #fff5f8;
+  }
+  body { background-color: var(--pink-soft); }
+  #title-block-header {
+    background: linear-gradient(135deg, #f8bbd0, #f48fb1);
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 14px rgba(194, 24, 91, 0.15);
+  }
+  #title-block-header .title { color: #ffffff; font-weight: 700; }
+  #title-block-header .subtitle,
+  #title-block-header .quarto-title-meta-heading,
+  #title-block-header .quarto-title-meta-contents { color: #fff0f5; }
+  h1, h2 {
+    color: var(--pink-dark);
+    border-bottom: 3px solid var(--pink-mid);
+    padding-bottom: 0.3rem;
+    margin-top: 2.5rem;
+  }
+  h3 { color: var(--pink-mid); }
+  a { color: var(--pink-dark); }
+  a:hover { color: var(--pink-mid); }
+  #TOC, #quarto-margin-sidebar {
+    background-color: #ffffff;
+    border-left: 4px solid var(--pink-mid);
+    border-radius: 10px;
+    padding: 0.75rem;
+  }
+  .sidebar nav[role="doc-toc"] ul > li > a.active { color: var(--pink-dark); border-left-color: var(--pink-dark); }
+  table { background-color: #ffffff; border-radius: 8px; overflow: hidden; }
+  thead { background-color: var(--pink-light); color: var(--pink-dark); }
+  blockquote {
+    border-left: 5px solid var(--pink-mid);
+    background-color: var(--pink-light);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+  }
+  .nav-tabs .nav-link.active { color: var(--pink-dark); border-top: 3px solid var(--pink-mid); }
+  .nav-tabs .nav-link { color: #ad1457; }
+  .key-term {
+    background-color: var(--pink-light);
+    color: var(--pink-dark);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .link-card {
+    background-color: #ffffff;
+    border: 2px solid var(--pink-light);
+    border-left: 6px solid var(--pink-mid);
+    border-radius: 10px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.8rem;
+  }
+</style>
+```
+
+::: {.callout-note icon="true"}
+## Today at a Glance
+- **Date:** Thursday, October 1, 2026 (Week 6)
+- **Format:** Zoom
+- **Agenda:** Announcement, Week 06 overview, Week 6 topics and assignments, CEP 03 presentations, CEP group meeting
+:::
+
+# Announcement
+
+## Free Google Career Certificates for CPP Students
+
+- CPP students can earn a **Google Career Certificate at no cost** through the **College of Professional and Global Education (CPGE)**
+- Details were sent by email; you need to **sign up** to get access
+- Gives access to many career certificates and specializations, many related to our careers
+
+::: {.panel-tabset}
+## Data Analytics
+**Google Data Analytics**: foundational data skills for analyst roles.
+
+## Advanced Data Analytics
+**Google Advanced Data Analytics**: builds on the data analytics certificate with more advanced methods.
+
+## Digital Marketing & E-commerce
+**Google Digital Marketing & E-commerce**: directly relevant to a digital marketing career.
+:::
+
+## Updated Project Template
+
+- Reminder of the announcement from last night: the **project template was revised**
+- **From now on, use the new template for all assignments**
+- The update emphasizes having **clear POs**, and the template now **expands on and explains what a PO is**
+
+<span class="key-term">PO</span>
+: Project Objective
+
+<span class="key-term">AO</span>
+: Analytical Objective
+
+::: {.callout-important}
+## Rule: Keep Each PO Right Above Its AOs
+Always place each PO **directly above** its related AO(s), for example PO1 followed by AO1, then PO2 followed by AO2.
+
+**Why:** the reader should not have to scroll up in the HTML to find a PO and then scroll back down to find the matching AO. Keeping them together makes the report easier to follow.
+:::
+
+```{mermaid}
+%%| fig-cap: "Correct layout: each PO sits right above its AOs"
+flowchart TD
+  P1[PO1: Project Objective 1] --> A1[AO1: Analytical Objective]
+  P2[PO2: Project Objective 2] --> A2[AO2: Analytical Objective]
+  P3[PO3: Project Objective 3] --> A3[AO3: Analytical Objective]
+  style P1 fill:#f48fb1,stroke:#c2185b,color:#fff
+  style P2 fill:#f48fb1,stroke:#c2185b,color:#fff
+  style P3 fill:#f48fb1,stroke:#c2185b,color:#fff
+  style A1 fill:#fce4ec,stroke:#ec407a
+  style A2 fill:#fce4ec,stroke:#ec407a
+  style A3 fill:#fce4ec,stroke:#ec407a
+```
+
+# Overview of Week 06 and More
+
+- The professor walked through the **Week 6 section of the syllabus**, covering this week's modules and assignments
+- Before class ended, he also previewed the **next CEP assignment** (see [CEP Group Meeting](#cep-group-meeting))
+
+# Week 6 Topics and Assignments
+
+| Item | Type | Notes |
+|:-----|:-----|:------|
+| Data Science Hangout Series | Webinar | Around 9 a.m.; optional, join if you can find the time |
+| Advanced Wrangling and Reveal Presentation Slides | Module | Data wrangling plus building slides in Quarto |
+| Reflection | Assignment | Reflection assignment for this week |
+| Questionnaire Design | Module | Designing survey questionnaires |
+| Group Proposal Presentation and Review | Presentation | Presented tonight on Zoom |
+
+: Week 6 at a glance {.striped .hover}
+
+::: {.callout-tip}
+## Data Science Hangout
+The webinar is at 9 a.m., so it may conflict with work. The professor said to join if you are able to make the time.
+:::
+
+# CEP Presentation on CEP 03 - Revision of Ch1 and Lit Review of Ch2
+
+- Groups presented their CEP 03 work: **revision of Chapter 1** and **literature review for Chapter 2**
+- We got through about **four or five groups**; not every group was able to present tonight
+- Notes on the presentations are **not** included here
+- Feedback was given separately as **replies to each group on the discussion board** (completed ✅)
+
+# CEP Group Meeting
+
+## Next CEP Assignment: Construct and Measurement Table
+
+- Before class ended, the professor introduced the **next CEP assignment: the construct and measurement table** for our project
+- This is the next deliverable to work on with our CEP group
+
+::: {.callout-warning}
+## To Do
+- [ ] Review the instructions for the construct and measurement table
+- [ ] Meet with the CEP group to plan it
+- [ ] Use the **updated template** with each PO placed right above its AOs
+- [ ] Sign up for the free Google Career Certificate through CPGE
+:::
+
+# Appendix {.appendix}
+
+## GitHub Links
+
+::: {.link-card}
+**📁 GitHub Repository**  
+<https://github.com/jukedz/ibm6500-assignments/tree/main/IC-W6-1%20(1001)-Class%20Participation>
+:::
+
+::: {.link-card}
+**🌐 Published Page (GitHub Pages)**  
+<https://jukedz.github.io/ibm6500-assignments/IC-W6-1%20(1001)-Class%20Participation/classnotes-w06.html>
+:::
+
+::: {.link-card}
+**📄 Source File (QMD)**  
+<https://github.com/jukedz/ibm6500-assignments/blob/main/IC-W6-1%20(1001)-Class%20Participation/classnotes-w06.qmd>
+:::
