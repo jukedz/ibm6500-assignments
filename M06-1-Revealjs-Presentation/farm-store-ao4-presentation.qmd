@@ -1,0 +1,495 @@
+---
+title: "Paid vs. Organic Search for the CPP Farm Store"
+subtitle: "AO4 Proposal Presentation: Website SEO and Google Shopping Ads"
+author: "Julieta Diaz"
+institute: "IBM 6500, Cal Poly Pomona"
+date: "`r Sys.Date()`"
+format:
+  revealjs:
+    theme: [serif, farmstore.scss]
+    css: styles.css
+    width: 1600
+    height: 900
+    logo: images/logo.svg
+    footer: "CPP Farm Store CEP | AO4: Paid vs. Organic Search"
+    transition: slide
+    transition-speed: default
+    background-transition: fade
+    incremental: false
+    toc: true
+    toc-depth: 1
+    toc-title: "Agenda"
+    slide-number: true
+    menu: true
+    preview-links: auto
+    scrollable: true
+    smaller: true
+    code-fold: false
+    code-overflow: wrap
+    number-sections: false
+    number-depth: 5
+    embed-resources: true
+editor: visual
+bibliography: references.bib
+csl: american-marketing-association.csl
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(scales)
+library(knitr)
+```
+
+```{r}
+#| label: get-data
+#| include: false
+# ------------------------------------------------------------------
+# DATA SOURCE: Google's public GA4 sample e-commerce dataset
+# (Google Merchandise Store, Nov 1 2020 to Jan 31 2021) in BigQuery.
+#
+# The query only runs when the cached CSV does not exist yet.
+# Run this chunk ONCE interactively in RStudio so bigrquery can open
+# the browser and log you in. After that, rendering just reads the CSV.
+# ------------------------------------------------------------------
+data_file <- "data/ga4_channel_funnel.csv"
+
+if (!file.exists(data_file)) {
+  library(bigrquery)
+  billing_project <- "ibm6500-bigquery"   # Google Cloud project ID used to run the query
+
+  sql <- "
+    SELECT
+      traffic_source.medium AS medium,
+      COUNT(DISTINCT user_pseudo_id) AS users,
+      COUNT(DISTINCT IF(event_name = 'view_item',      user_pseudo_id, NULL)) AS viewed_item,
+      COUNT(DISTINCT IF(event_name = 'add_to_cart',    user_pseudo_id, NULL)) AS added_to_cart,
+      COUNT(DISTINCT IF(event_name = 'begin_checkout', user_pseudo_id, NULL)) AS began_checkout,
+      COUNT(DISTINCT IF(event_name = 'purchase',       user_pseudo_id, NULL)) AS purchased
+    FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+    WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+    GROUP BY medium
+    ORDER BY users DESC
+  "
+
+  ga4_raw <- bq_project_query(billing_project, sql) |> bq_table_download()
+  dir.create("data", showWarnings = FALSE)
+  write_csv(ga4_raw, data_file)
+}
+
+ga4_raw <- read_csv(data_file, show_col_types = FALSE)
+```
+
+```{r}
+#| label: wrangle
+#| include: false
+channel_lookup <- c(
+  "organic"  = "Organic search",
+  "cpc"      = "Paid search (CPC)",
+  "referral" = "Referral",
+  "(none)"   = "Direct"
+)
+
+ga4 <- ga4_raw |>
+  filter(medium %in% names(channel_lookup)) |>
+  mutate(
+    channel   = unname(channel_lookup[medium]),
+    conv_rate = purchased / users,
+    share     = users / sum(users)
+  ) |>
+  arrange(desc(users))
+
+funnel <- ga4 |>
+  select(channel, users, viewed_item, added_to_cart, began_checkout, purchased) |>
+  pivot_longer(-channel, names_to = "step", values_to = "n") |>
+  mutate(step = factor(step,
+    levels = c("users", "viewed_item", "added_to_cart", "began_checkout", "purchased"),
+    labels = c("Visited", "Viewed item", "Added to cart", "Began checkout", "Purchased"))) |>
+  group_by(channel) |>
+  mutate(pct_of_visitors = n / max(n)) |>
+  ungroup()
+
+# Numbers used with inline code in the narrative
+total_users      <- sum(ga4_raw$users)
+total_purchasers <- sum(ga4_raw$purchased)
+overall_cr       <- total_purchasers / total_users
+cr_organic <- ga4$conv_rate[ga4$medium == "organic"]
+cr_cpc     <- ga4$conv_rate[ga4$medium == "cpc"]
+n_cpc      <- ga4$users[ga4$medium == "cpc"]
+n_organic  <- ga4$users[ga4$medium == "organic"]
+
+# Chi-square test: is purchasing independent of organic vs. paid channel?
+chi_tab <- ga4 |>
+  filter(medium %in% c("organic", "cpc")) |>
+  transmute(channel, purchased, not_purchased = users - purchased)
+chi_mat <- as.matrix(chi_tab[, -1])
+rownames(chi_mat) <- chi_tab$channel
+chi_res <- chisq.test(chi_mat)
+```
+
+# Introduction
+
+## Who Is the Client? {transition="fade"}
+
+:::::::: columns
+:::: {.column width="58%"}
+The **CPP Farm Store at Kellogg Ranch** is a Cal Poly Pomona operation that sells:
+
+::: incremental
+- Fresh produce and eggs grown on campus
+- Plants and specialty products
+- Customizable gift baskets
+- Products both **in store** and through an **online store** linked from cpp.com
+:::
+::::
+
+::::: {.column width="42%"}
+:::: {.fragment .fade-left}
+::: takeaway
+A university-run store that has to balance an **educational mission** with the practical need to **generate revenue**.
+:::
+::::
+:::::
+::::::::
+
+::: notes
+Open by grounding the audience in who the client is. Emphasize that the online store is new, which is why search visibility matters now.
+:::
+
+## Problem Statement
+
+The Farm Store's online store and cpp.com page currently have **minimal search visibility**.
+
+. . .
+
+It is unclear whether **paid search** (Google Shopping Ads) would meaningfully outperform **organic optimization** (SEO) alone.
+
+. . .
+
+Without conversion data, any ad budget decision would be a [guess]{.fragment .highlight-red}.
+
+::: aside
+Problem surfaced in the client kickoff meeting, Fall 2026. GA4 access was approved by the client on Sept. 29, 2026.
+:::
+
+::: notes
+Pause after each line. The highlighted word "guess" is the hook for why analytics is needed.
+:::
+
+## Project and Analytics Objective {background-color="#2E5E3E"}
+
+:::: {style="color: white;"}
+**PO3:** Optimize the websites (cpp.com and the online store) by planning SEO strategies and implementing them.
+
+::: {.fragment .grow}
+**AO4:** Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion.
+:::
+::::
+
+::: notes
+This is the single analytics objective this deck focuses on. The other three AOs belong to my teammates.
+:::
+
+## Why This Matters
+
+::: incremental
+- **Budget:** a small university store cannot afford to spend on ads that do not convert
+- **Evidence:** the client asked for more data-driven decision making
+- **Timing:** the online store is new, so a baseline set now makes every future campaign measurable
+- **Decision:** results tell the Farm Store whether to invest in paid Shopping Ads, strengthen organic SEO, or do both
+:::
+
+# Literature Review
+
+## Well-Established Models {.scrollable}
+
+::: panel-tabset
+### Paid search works
+
+Keyword-targeted sponsored search can raise both click-through and conversion rates for online retailers, especially when ad placement and keyword relevance are optimized together [@ghose2009].
+
+Shopping goal theory explains why advertisers bid to intercept customers at different stages of the shopping journey [@azemiozuem2026].
+
+### What drives conversion
+
+Not every campaign setting matters equally. **Budget** and **keyword matching** have the largest effect on conversions, while click-through rate and bid amount matter less [@olbrichschultz2014].
+
+### Trust and value
+
+For Google Shopping Ads specifically, purchase intention depends less on ad exposure and more on the **trust** and **perceived value** consumers attach to the ad, and this differs between Gen Y and Gen Z [@duffett2025].
+
+### Measurement
+
+GA4 reports the metrics this AO needs (traffic source, conversion rate, organic vs. paid acquisition), but it shows *what* happens in the funnel, not *why* [@mohaimin2025].
+:::
+
+::: notes
+Click through each tab. The story goes: paid search can work, here is what makes it work, here is the consumer-side caveat, and here is the tool we will use to measure it.
+:::
+
+## Is the Data Adequate?
+
+::::: columns
+::: {.column width="50%"}
+### What GA4 can answer
+
+- Click-through and conversion rate
+- Cost per click and ROAS (via Google Ads link)
+- Organic vs. paid traffic split
+- Where visitors drop off in the funnel
+:::
+
+::: {.column width="50%"}
+### What GA4 cannot answer
+
+- Do shoppers **trust** the ads?
+- Do they see **value** in them?
+- Which **keyword match types** drive results?
+:::
+:::::
+
+:::: fragment
+::: takeaway
+**Need for additional analysis:** a short customer survey on ad trust and perceived value, plus a review of keyword-matching data once Google Ads is connected.[^1]
+:::
+::::
+
+[^1]: Without these, conclusions would rest on click and conversion metrics alone, which prior research suggests is an incomplete picture of purchase intention.
+
+# Methods
+
+## Data and Sampling
+
+:::::: columns
+::: {.column width="55%"}
+- **Population:** visitors to the Farm Store website and online store
+- **Planned data:** Farm Store GA4 property (access pending)
+- **Demo data for this proposal:** Google's public GA4 sample e-commerce dataset (Google Merchandise Store), Nov 2020 to Jan 2021
+- **Sample:** all users in that period, **`r comma(total_users)` users**, of whom **`r comma(total_purchasers)`** made a purchase
+:::
+
+:::: {.column width="45%"}
+::: callout-note
+## Why a sample dataset?
+
+The Farm Store GA4 property is not connected yet. The public dataset has the **exact same GA4 schema**, so the code written now will run on Farm Store data later by changing one table name.
+:::
+::::
+::::::
+
+::: notes
+The sample-size numbers on this slide are generated by inline R code, so they update automatically if the data changes.
+:::
+
+## Data Wrangling {#data-wrangling .scrollable}
+
+::: panel-tabset
+### 1. Import
+
+GA4 stores one row per **event**. A BigQuery SQL query rolls events up to one count per traffic medium and funnel step, and the result is cached as a CSV for reproducibility. [See full query](#sec-app-sql){.appendix-link}
+
+```{r}
+#| label: show-import
+#| eval: false
+ga4_raw <- bq_project_query(billing_project, sql) |> bq_table_download()
+write_csv(ga4_raw, "data/ga4_channel_funnel.csv")
+```
+
+### 2. Clean
+
+```{r}
+#| label: show-clean
+#| eval: false
+ga4 <- ga4_raw |>
+  filter(medium %in% names(channel_lookup)) |>     # drop "(data deleted)" and "<Other>"
+  mutate(channel   = unname(channel_lookup[medium]),
+         conv_rate = purchased / users)
+```
+
+### 3. Reshape
+
+```{r}
+#| label: show-reshape
+#| eval: false
+funnel <- ga4 |>
+  select(channel, users:purchased) |>
+  pivot_longer(-channel, names_to = "step", values_to = "n")
+```
+:::
+
+## Sample Characteristics
+
+```{r}
+#| label: tbl-sample
+#| echo: false
+#| tbl-cap: "Users and purchasers by traffic channel (GA4 sample data)"
+ga4 |>
+  transmute(
+    Channel           = channel,
+    Users             = comma(users),
+    `Share of users`  = percent(share, 0.1),
+    Purchasers        = comma(purchased),
+    `Conversion rate` = percent(conv_rate, 0.01)
+  ) |>
+  kable(align = "lrrrr")
+```
+
+::: fragment
+@tbl-sample shows paid search brought in `r comma(n_cpc)` users compared with `r comma(n_organic)` from organic search.
+:::
+
+## Conversion by Channel {.smaller}
+
+```{r}
+#| label: fig-conv
+#| fig-cap: "Visitor-to-purchase conversion rate by channel"
+#| output-location: column
+#| fig-width: 7
+#| fig-height: 5
+ga4 |>
+  ggplot(aes(x = reorder(channel, conv_rate),
+             y = conv_rate)) +
+  geom_col(fill = "#2E5E3E") +
+  geom_text(aes(label = percent(conv_rate, 0.01)),
+            hjust = -0.1, size = 6) +
+  coord_flip() +
+  scale_y_continuous(labels = percent,
+                     expand = expansion(mult = c(0, 0.2))) +
+  labs(x = NULL,
+       y = "Conversion rate") +
+  theme_minimal(base_size = 18)
+```
+
+::: notes
+Code on the left, chart on the right. This is the reproducible chart required for the assignment. Point out that the chart rebuilds itself every time the deck is rendered.
+:::
+
+## Where Visitors Drop Off
+
+```{r}
+#| label: fig-funnel
+#| echo: false
+#| fig-cap: "Share of each channel's visitors who reach each funnel step"
+#| fig-width: 13
+#| fig-height: 5.5
+funnel |>
+  ggplot(aes(step, pct_of_visitors, color = channel, group = channel)) +
+  geom_line(linewidth = 1.3) +
+  geom_point(size = 3) +
+  scale_y_continuous(labels = percent) +
+  scale_color_manual(values = c("#2E5E3E", "#FFB81C", "#6B4E31", "#8FA98F")) +
+  labs(x = NULL, y = "% of channel visitors", color = NULL) +
+  theme_minimal(base_size = 18) +
+  theme(legend.position = "top")
+```
+
+::: notes
+@fig-funnel is the "conversion path" view. Look for the step where one line separates from the others.
+:::
+
+## Measures
+
+| Construct | GA4 / Google Ads metric | Scale |
+|--------------------------|---------------------------|-------------------|
+| Traffic acquisition | Users by medium (organic, cpc, referral, direct) | Nominal |
+| Engagement | View item, add to cart, begin checkout | Ratio (counts) |
+| Conversion | Purchasers / users | Ratio (%) |
+| Ad efficiency | Click-through rate, cost per click | Ratio |
+| Ad return | Return on ad spend (ROAS) | Ratio |
+| Ad trust and perceived value | Survey items (planned) | Interval (Likert) |
+
+: Constructs and how they are operationalized
+
+## Analytics Methods
+
+::: incremental
+1.  **Descriptive funnel analysis** by channel (@fig-funnel)
+2.  **Chi-square test of independence:** is purchasing independent of organic vs. paid channel?
+3.  **Pre/post comparison** once the Farm Store runs a Shopping Ads test period
+4.  **Survey analysis** of ad trust and perceived value as drivers of purchase intention
+:::
+
+. . .
+
+::: takeaway
+**Preview on sample data:** paid search converted at `r percent(cr_cpc, 0.01)` vs. `r percent(cr_organic, 0.01)` for organic search, $\chi^2$ = `r round(chi_res$statistic, 2)`, p `r ifelse(chi_res$p.value < .001, "< .001", paste("=", round(chi_res$p.value, 3)))`.
+:::
+
+::: fragment
+In Google's store, paid traffic converted `r ifelse(cr_cpc < cr_organic, "*lower*", "*higher*")` than organic search. `r ifelse(cr_cpc < cr_organic, "This fits the trust and perceived value argument: ad clicks alone do not guarantee purchases [@duffett2025]. It is exactly the question the Farm Store data needs to answer before any ad budget is spent.", "This suggests paid search can pull high-intent shoppers, consistent with prior sponsored search research [@ghose2009]. The Farm Store data will show whether the same holds for a small local store.")`
+:::
+
+::: notes
+Stress that these numbers come from Google's demo store, not the Farm Store. They show the method works; the Farm Store results will come once GA4 is connected.
+:::
+
+# Wrap Up
+
+## Next Steps {transition="zoom"}
+
+::: {.fragment .fade-up}
+1.  Connect the Farm Store GA4 property (client approved, IT setup pending)
+:::
+
+::: {.fragment .fade-up}
+2.  Swap the sample table name for the Farm Store GA4 export and rerun
+:::
+
+::: {.fragment .fade-up}
+3.  Draft the ad trust and perceived value survey items
+:::
+
+::: {.fragment .fade-up}
+4.  Recommend: paid Shopping Ads, stronger organic SEO, or both
+:::
+
+## References
+
+::: {#refs}
+:::
+
+# Appendix {visibility="uncounted"}
+
+## A. Full BigQuery SQL {#sec-app-sql visibility="uncounted"}
+
+```{r}
+#| label: show-sql
+#| echo: false
+#| comment: ""
+cat(
+"SELECT
+  traffic_source.medium AS medium,
+  COUNT(DISTINCT user_pseudo_id) AS users,
+  COUNT(DISTINCT IF(event_name = 'view_item',      user_pseudo_id, NULL)) AS viewed_item,
+  COUNT(DISTINCT IF(event_name = 'add_to_cart',    user_pseudo_id, NULL)) AS added_to_cart,
+  COUNT(DISTINCT IF(event_name = 'begin_checkout', user_pseudo_id, NULL)) AS began_checkout,
+  COUNT(DISTINCT IF(event_name = 'purchase',       user_pseudo_id, NULL)) AS purchased
+FROM `bigquery-public-data.ga4_obfuscated_sample_ecommerce.events_*`
+WHERE _TABLE_SUFFIX BETWEEN '20201101' AND '20210131'
+GROUP BY medium
+ORDER BY users DESC")
+```
+
+[Back to Data Wrangling](#data-wrangling){.appendix-link}
+
+## B. Project Files {visibility="uncounted"}
+
+- [Live presentation (GitHub Pages)](https://jukedz.github.io/ibm6500-assignments/M06-1-Revealjs-Presentation/farm-store-ao4-presentation.html)
+- [Source code and data (GitHub repo folder)](https://github.com/jukedz/ibm6500-assignments/tree/main/M06-1-Revealjs-Presentation)
+- [Quarto source file (.qmd)](https://github.com/jukedz/ibm6500-assignments/blob/main/M06-1-Revealjs-Presentation/farm-store-ao4-presentation.qmd)
+- [Cached GA4 query result (.csv)](https://github.com/jukedz/ibm6500-assignments/blob/main/M06-1-Revealjs-Presentation/data/ga4_channel_funnel.csv)
+- [Custom theme (.scss)](https://github.com/jukedz/ibm6500-assignments/blob/main/M06-1-Revealjs-Presentation/farmstore.scss)
+
+## C. Useful Links {visibility="uncounted"}
+
+- [Google's GA4 sample e-commerce dataset documentation](https://developers.google.com/analytics/bigquery/web-ecommerce-demo-dataset)
+- [GA4 BigQuery export schema](https://support.google.com/analytics/answer/7029846)
+- [CPP Farm Store](https://www.cpp.edu/farmstore/)
+- [Quarto Revealjs documentation](https://quarto.org/docs/presentations/revealjs/)
+- [CCIDM effective Quarto slides repo](https://github.com/CCIDM/effective-quarto-slides)

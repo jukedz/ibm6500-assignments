@@ -1,0 +1,15 @@
+/* Small plain-CSS additions layered on top of farmstore.scss */
+
+.reveal .appendix-link a {
+  background: #2E5E3E;
+  color: #FFFFFF;
+  padding: 0.15em 0.6em;
+  border-radius: 4px;
+  font-size: 0.8em;
+  text-decoration: none;
+}
+
+.reveal .small-note {
+  font-size: 0.65em;
+  color: #6B4E31;
+}

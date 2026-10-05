@@ -1,0 +1,61 @@
+/*-- scss:defaults --*/
+
+// Sass variables: change these once and every slide updates
+$farm-green: #2E5E3E;
+$cpp-gold: #FFB81C;
+$soil-brown: #6B4E31;
+$cream: #FBF8F1;
+
+$body-bg: $cream;
+$body-color: #2B2B2B;
+$link-color: $farm-green;
+$presentation-heading-color: $farm-green;
+$presentation-heading-font: "Georgia", "Times New Roman", serif;
+$font-family-sans-serif: "Helvetica Neue", Arial, sans-serif;
+$presentation-font-size-root: 34px;
+
+/*-- scss:rules --*/
+
+.reveal h1 {
+  border-bottom: 4px solid $cpp-gold;
+  padding-bottom: 0.2em;
+}
+
+.reveal h2 {
+  color: $farm-green;
+}
+
+.reveal .slide-title-highlight,
+.reveal strong {
+  color: $soil-brown;
+}
+
+// Title slide
+.reveal .quarto-title-block .title {
+  color: $farm-green;
+  font-size: 2.4em;
+}
+.reveal .quarto-title-block .subtitle {
+  color: $soil-brown;
+}
+
+// Key-takeaway box used on several slides
+.reveal .takeaway {
+  background: rgba($cpp-gold, 0.18);
+  border-left: 8px solid $cpp-gold;
+  padding: 0.5em 0.8em;
+  border-radius: 6px;
+  margin-top: 0.6em;
+}
+
+// Footer styling
+.reveal .footer {
+  color: $soil-brown;
+  font-style: italic;
+}
+
+// Tables
+.reveal table th {
+  background: $farm-green;
+  color: white;
+}
