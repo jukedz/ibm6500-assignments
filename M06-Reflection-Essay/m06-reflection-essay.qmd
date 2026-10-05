@@ -1,0 +1,351 @@
+---
+title: "M06-Reflection Essay-Advanced Data Wrangling"
+subtitle: "Revealjs Presentations and Relational Data in dplyr"
+author: "Julieta Diaz"
+date: today
+format:
+  html:
+    theme:
+      light: flatly
+      dark: darkly
+    toc: true
+    toc-depth: 4
+    toc-expand: 2
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    code-link: true
+    code-fold: show
+    code-summary: "Show the code"
+    code-tools: true
+    code-overflow: wrap
+    code-copy: true
+    highlight-style: github
+    smooth-scroll: true
+    link-external-newwindow: true
+    link-external-icon: true
+    embed-resources: true
+editor: visual
+execute:
+  freeze: auto
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(knitr)
+```
+
+# Overview {.unnumbered}
+
+This reflection covers the three parts of Module 6: designing presentation slides with Quarto Revealjs (@sec-revealjs), building and publishing my own Revealjs presentation (@sec-my-deck), and advanced data wrangling with relational data in `dplyr` (@sec-wrangling).
+
+::: callout-tip
+## How to read this report
+
+Each section begins with the prompt in a shaded box, followed by my response. Code chunks can be collapsed with the **Show the code** toggle, and the **\</\> Code** button at the top right shows the full Quarto source.
+:::
+
+# Revealjs Presentations {#sec-revealjs}
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+What is your impression of the Revealjs presentation? Describe its capabilities as you learned from the presentations. What are its strengths and weaknesses compared with PowerPoint?
+:::
+
+## My Impression
+
+My first impression was that Revealjs turns a presentation into something closer to a **live web page** than a slide file. Before this module, I thought of slides and analysis as two separate jobs: run the numbers in one program, then copy charts and tables into PowerPoint. The CCIDM workshop and Dr. Jung's Case 31 sample deck showed that the same Quarto file can hold the narrative, the code, and the output, so the slides are always in sync with the data.
+
+> The biggest shift for me was realizing that a chart in a Revealjs deck is not a picture of the analysis. It *is* the analysis, rerun every time the deck is rendered.
+
+## Capabilities
+
+The workshop grouped Revealjs features into two areas: features that keep an audience engaged while presenting, and features that control how the slides look.
+
+::: panel-tabset
+### Audience engagement
+
+| Feature | How to use it | When it helps |
+|------------------------|------------------------|------------------------|
+| **Navigation menu** | Hamburger icon, bottom left | Jumping to a section during Q&A |
+| **Overview mode** | Press `Esc` | Showing the whole story structure at once |
+| **Slide zoom** | `Alt` + click (Windows) or `Option` + click (Mac) | Magnifying a dense table or chart |
+| **Speaker view** | Press `S` | Reading notes and seeing the next slide privately |
+| **Chalkboard** | Enabled in YAML | Annotating a chart live or sketching an idea |
+| **Multiplex** | Enabled in YAML with a secret key | Controlling slides on every audience member's screen |
+
+: Engagement features covered in the workshop {#tbl-engage}
+
+### Design and customization
+
+1.  **Built-in themes:** change the whole look with one line, such as `theme: serif`.
+2.  **Stacked themes:** layer my own styles on top, such as `theme: [serif, custom.scss]`.
+3.  **Sass variables:** define brand colors and fonts once (for example `$body-bg` or `$link-color`) and every slide updates.
+4.  **CSS rules:** target specific elements like `h1`, `.reveal`, or a custom class.
+5.  **Layout tools:** columns, tabsets, fragments, incremental lists, asides, footnotes, and per-slide transitions and backgrounds.
+
+### Reproducibility
+
+-   Code chunks run every time the deck is rendered, so tables and figures always match the current data.
+-   Inline R code, such as a sample size written as `` `r knitr::inline_expr("nrow(data)")` ``, keeps numbers in the narrative accurate.
+-   Figures and tables can be cross-referenced with labels like `@fig-conv`.
+-   Citations come straight from a `.bib` file with a formatted reference list.
+-   `embed-resources: true` packs everything into a single HTML file, and Quarto Pub publishes it with one command.
+:::
+
+## Revealjs vs. PowerPoint
+
+```{r}
+#| label: tbl-compare
+#| tbl-cap: "Strengths and weaknesses of Revealjs compared with PowerPoint"
+#| echo: false
+tribble(
+  ~Dimension,              ~Revealjs,                                           ~PowerPoint,
+  "Reproducibility",       "Charts and numbers regenerate from code",           "Charts are pasted in and go stale",
+  "Brand consistency",     "One SCSS file styles every slide",                  "Slide masters help, but manual edits drift",
+  "Sharing",               "A single web link, opens on any device",            "File attachments and version confusion",
+  "Interactivity",         "Live code, tabsets, zoom, multiplex, web embeds",  "Mostly static; animations only",
+  "Learning curve",        "Requires YAML, Markdown, and some CSS",             "Familiar to almost everyone",
+  "Visual freedom",        "Precise placement is harder",                      "Drag-and-drop anywhere on the slide",
+  "Collaboration",         "Through GitHub; harder for non-coders",             "Real-time co-editing in Microsoft 365",
+  "Offline presenting",    "Needs a browser; some features need internet",      "Works anywhere PowerPoint is installed"
+) |>
+  kable()
+```
+
+**Strengths.** As @tbl-compare shows, Revealjs wins wherever the content is driven by data. For a marketing analytics project, the ability to rerun a deck after new data arrives is a major time saver, and the result is more trustworthy because nothing is copied by hand. A web link is also easier to share with a client than a large file.
+
+**Weaknesses.** PowerPoint still wins on speed for simple, visual decks and on collaboration with people who do not code. In a group project where only some teammates use Quarto, a Revealjs deck can become a bottleneck because edits have to go through the person who renders it. Fine visual layout, like placing an image at an exact spot, also takes more effort in Revealjs.[^1]
+
+[^1]: Absolute positioning is possible with the `.absolute` class and `top`, `left`, and `width` attributes, but it is less intuitive than dragging an element in PowerPoint.
+
+::: callout-important
+## Bottom line
+
+I would choose Revealjs for any presentation built on data analysis (like my CEP proposal) and PowerPoint or Canva for a quick, design-heavy pitch where teammates need to edit together.
+:::
+
+# My Revealjs Presentation {#sec-my-deck}
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+Provide a link to the Revealjs presentation you published on the web. Add at least one reproducible chart or table in the presentation. Briefly describe what the presentation is about. What did you learn from the experience?
+:::
+
+## Published Link
+
+::: {.callout-tip icon="false"}
+## View the presentation
+
+[**Paid vs. Organic Search for the CPP Farm Store**](https://jukedz.github.io/ibm6500-assignments/M06-1-Revealjs-Presentation/farm-store-ao4-presentation.html)
+
+Source code and data: [GitHub repo folder](https://github.com/jukedz/ibm6500-assignments/tree/main/M06-1-Revealjs-Presentation)
+:::
+
+::: {.callout-note collapse="true"}
+## Presenting tips for viewers
+
+Press `F` for full screen, `Esc` for the slide overview, `S` for speaker notes, and use the menu icon at the bottom left to jump between sections.
+:::
+
+## What the Presentation Is About
+
+The presentation is my individual piece of our team's Culminating Experience Project (CEP) for the **Cal Poly Pomona Farm Store at Kellogg Ranch**. Each of the four team members leads one analytics objective, and the deck focuses only on mine:
+
+> **AO4:** Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion.
+
+The slides follow the storyline Dr. Jung recommended:
+
+1.  **Introduction:** the client, the problem (low search visibility), the objective, and why it matters
+2.  **Literature review:** research on sponsored search, campaign settings that drive conversion, consumer trust in Shopping Ads, and GA4 as a measurement tool, followed by an assessment of whether GA4 data is adequate and what additional analysis is needed
+3.  **Methods:** data and sampling, wrangling steps, sample characteristics, measures, and analytics methods
+4.  **References** and an **appendix** with the full SQL query and clickable links
+
+**Reproducible chart and tables.** Because the Farm Store's GA4 property is not connected yet, I used Google's public GA4 sample e-commerce dataset in BigQuery, which has the exact same structure. A SQL query counts users at each funnel step (visit, view item, add to cart, begin checkout, purchase) by traffic medium. The deck then produces a sample characteristics table, a bar chart of conversion rate by channel (with the code shown beside the chart using `output-location: column`), a funnel chart, and a chi-square test comparing paid and organic search. The sample size on the methods slide is written with inline R code, so it updates automatically.
+
+::: callout-note
+## A finding that surprised me
+
+Across 328,574 users in Google's sample store, paid search (CPC) converted at about **0.98%**, compared with **1.18%** for organic search, and the difference was statistically significant ($\chi^2$ = 4.55, p = .033). In other words, paying for clicks did not automatically produce more buyers. This supports Duffett and Charles's argument that trust and perceived value, not ad exposure alone, drive purchases from Shopping Ads, and it is exactly the question my Farm Store analysis will need to answer before the store spends anything on ads.
+:::
+
+## Features I Used
+
+::: panel-tabset
+### Structure
+
+-   Title slide with subtitle, institute, and date
+-   Table of contents (`toc: true`) and slide numbers
+-   Section header slides, a custom background color slide, and an uncounted appendix
+-   Clickable internal links from the methods slides to the appendix
+
+### Pacing
+
+-   Incremental lists and manual pauses with `. . .`
+-   Fragments (`fade-left`, `fade-up`, `grow`, `highlight-red`)
+-   Slide-level transitions (`fade`, `zoom`)
+-   Speaker notes on most slides
+
+### Design
+
+-   `serif` theme stacked with my own `farmstore.scss`
+-   Sass variables for Farm Store green, CPP gold, and a cream background
+-   A small `styles.css` for appendix buttons
+-   Footer and a custom leaf logo
+
+### Content
+
+-   Columns, tabsets, asides, footnotes, and callouts
+-   Cross-referenced figures and tables
+-   Citations from my team's Zotero `.bib` file in AMA style
+:::
+
+## What I Learned
+
+-   **Data first, slides second.** Writing the query and wrangling code before designing slides made the story clearer, because every claim on a slide had a number behind it.
+-   **Caching makes reproducibility practical.** Querying BigQuery during every render would be slow and needs a login, so the code saves the query result to a CSV once and reads that file afterward. Anyone with the CSV can rebuild the deck.
+-   **Sample data is a legitimate stand-in.** Using a dataset with the same schema as the client's GA4 means my code is ready the day access is granted. I only need to change the table name.
+-   **Less is more on a slide.** My first draft put too much text on each slide. Fragments and speaker notes let me move detail out of the slide and into what I say.
+-   **Theming is powerful but fussy.** Small SCSS changes (like heading colors) affected many slides at once, which is great for consistency but means testing every change by re-rendering.
+
+# Advanced Data Wrangling {#sec-wrangling}
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+Pick three different functions, each from a different category. Describe when to use them and give one coding example along with an output for each function, weaving narrative with code (literate programming).
+:::
+
+The lecture covered several categories of `dplyr` tools: ranking functions, **mutating joins**, **filtering joins**, set operations, **column-wise operations**, conditional logic, and row-wise operations. I chose one function from each of three categories that I expect to use directly on the Farm Store's Clover and GA4 data.
+
+| Category | Function | Question it answers |
+|------------------|------------------|-------------------------------------|
+| Mutating join | `left_join()` | "Add product details to every order line." |
+| Filtering join | `anti_join()` | "Which products were never ordered?" |
+| Column-wise operation | `across()` | "Summarize many numeric columns at once." |
+
+: The three functions in this section {#tbl-functions}
+
+## Practice Data
+
+To keep the examples close to my project, I built two small relational tables that mimic a farm store's point-of-sale data.[^2] The `products` table has one row per product, so `product_id` is its **primary key**. The `orders` table has one row per order line, and its `product_id` column is a **foreign key** pointing back to `products`.
+
+[^2]: These are made-up example tables created for practice, not real Farm Store data.
+
+```{r}
+#| label: practice-data
+products <- tribble(
+  ~product_id, ~product,          ~category,   ~price,
+  "P01",       "Strawberries",    "Produce",    6.00,
+  "P02",       "Avocados (3)",    "Produce",    5.00,
+  "P03",       "Farm eggs dozen", "Dairy/Eggs", 7.50,
+  "P04",       "Honey jar",       "Specialty", 12.00,
+  "P05",       "Succulent pot",   "Plants",     9.00,
+  "P06",       "Gift basket",     "Specialty", 45.00
+)
+
+orders <- tribble(
+  ~order_id, ~product_id, ~qty, ~channel,
+  1001,      "P01",        2,   "In store",
+  1001,      "P03",        1,   "In store",
+  1002,      "P06",        1,   "Online",
+  1003,      "P02",        3,   "Online",
+  1003,      "P01",        1,   "Online",
+  1004,      "P04",        2,   "In store",
+  1005,      "P09",        1,   "Online"
+)
+```
+
+Before joining, I checked that the primary key is really unique, one of the "join problems" steps from the lecture:
+
+```{r}
+#| label: check-key
+products |> count(product_id) |> filter(n > 1)
+```
+
+An empty result means every `product_id` appears once, so it is safe to use as a key.
+
+## Mutating Join: `left_join()` {#sec-left-join}
+
+**When to use it.** A mutating join adds *columns* from one table to another by matching keys. I use `left_join()` when I want to keep **every row of the main table** (here, every order line) even if a match is missing. It is the most common join because it never silently drops my main observations.
+
+```{r}
+#| label: left-join
+order_lines <- orders |>
+  left_join(products, by = "product_id") |>
+  mutate(revenue = qty * price)
+
+order_lines
+```
+
+**What the output shows.** All `r nrow(orders)` order lines are kept, and each now has its product name, category, and price, so I can calculate revenue. Order 1005 has `NA` for product details because `P09` does not exist in `products`. That `NA` is useful: an `inner_join()` would have dropped this row without warning, and I would never know the catalog was missing an item.
+
+::: callout-warning
+## Lesson learned
+
+Always count rows before and after a join. If a `left_join()` *adds* rows, the key in the right-hand table is duplicated.
+:::
+
+## Filtering Join: `anti_join()` {#sec-anti-join}
+
+**When to use it.** Filtering joins keep or drop *rows* of the first table based on whether they have a match in the second, without adding any columns. `anti_join(x, y)` returns the rows of `x` that have **no match** in `y`. It is ideal for finding gaps, such as products that never sold or records with broken keys.
+
+```{r}
+#| label: anti-join
+# Products that were never ordered
+products |>
+  anti_join(orders, by = "product_id")
+```
+
+```{r}
+#| label: anti-join-2
+# Order lines whose product_id has no match in the catalog
+orders |>
+  anti_join(products, by = "product_id")
+```
+
+**What the output shows.** The first result lists the products with zero sales in this period, a quick dead-stock check for the store. The second result catches order 1005 with the unknown `P09`, which is exactly the "check that your foreign keys match primary keys" step from the lecture. On real data, this would flag a catalog sync problem between Clover and the online store, which is one of my teammate's objectives.
+
+## Column-wise Operation: `across()` {#sec-across}
+
+**When to use it.** `across()` applies the same function(s) to many columns at once inside `summarise()` or `mutate()`. Instead of writing `sum(qty)`, `sum(revenue)`, `mean(qty)`, and `mean(revenue)` one by one, I describe the columns and the functions once. The `.names` argument uses glue syntax to control the output column names.
+
+```{r}
+#| label: across
+category_summary <- order_lines |>
+  filter(!is.na(category)) |>
+  group_by(category) |>
+  summarise(
+    across(c(qty, revenue),
+           list(total = sum, avg = mean),
+           .names = "{.col}_{.fn}")
+  ) |>
+  arrange(desc(revenue_total))
+
+category_summary
+```
+
+**What the output shows.** One short call created four summary columns (`qty_total`, `qty_avg`, `revenue_total`, `revenue_avg`) for each category. Here, **`r category_summary$category[1]`** leads in revenue with \$`r format(category_summary$revenue_total[1], nsmall = 2)`, largely because of the gift basket. If I later add another numeric column, such as discount amount, I only add its name inside `c()`.
+
+## How the Three Fit Together
+
+These functions form a natural pipeline: `left_join()` combines the tables, `anti_join()` audits what did not match, and `across()` summarizes the result. In the Farm Store project, the same pattern will connect Clover transactions to the product catalog, flag unsynced items, and summarize sales by category for the dashboards.
+
+# Conclusion {.unnumbered}
+
+This module changed how I think about presenting analysis. Revealjs lets my slides stay connected to the data, and the advanced `dplyr` tools give me a reliable way to combine and check the multiple tables that real client data comes in. Both skills will go directly into my CEP work on the Farm Store.
+
+# Appendix {.unnumbered}
+
+-   [This report on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/M06-Reflection-Essay/m06-reflection-essay.html)
+-   [This report's source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/M06-Reflection-Essay)
+-   [Revealjs presentation on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/M06-1-Revealjs-Presentation/farm-store-ao4-presentation.html)
+-   [Revealjs presentation source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/M06-1-Revealjs-Presentation)
+-   [Dr. Jung's Advanced Wrangling with dplyr slides](https://jmjung.quarto.pub/m06-advanced-wrangling-with-dplyr/)
+-   [CCIDM effective Quarto slides repo](https://github.com/CCIDM/effective-quarto-slides)
