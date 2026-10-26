@@ -1,0 +1,110 @@
+/*-- scss:defaults --*/
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600&display=swap');
+
+// Sass variables: the same palette as my portfolio website
+$burgundy: #6B2737;
+$plum:     #8A4B5E;
+$blush:    #F3D9DC;
+$sky:      #CFE3F1;
+$cream:    #FBF7F1;
+$ink:      #2B2326;
+
+$body-bg: $cream;
+$body-color: $ink;
+$link-color: $burgundy;
+$presentation-heading-color: $burgundy;
+$presentation-heading-font: "Playfair Display", Georgia, serif;
+$font-family-sans-serif: "Inter", "Helvetica Neue", Arial, sans-serif;
+$presentation-font-size-root: 32px;
+$code-block-bg: #FFFFFF;
+
+/*-- scss:rules --*/
+
+.reveal h1 {
+  border-bottom: 4px solid $blush;
+  padding-bottom: 0.2em;
+}
+
+.reveal h2 {
+  color: $burgundy;
+}
+
+.reveal strong {
+  color: $plum;
+}
+
+.reveal .quarto-title-block .title {
+  font-size: 2.3em;
+}
+
+.reveal .quarto-title-block .subtitle {
+  color: $plum;
+  font-style: italic;
+}
+
+// Prompt box: the question from the assignment, shown to the audience
+.reveal .prompt {
+  background: linear-gradient(120deg, $sky 0%, #E9F1F7 50%, $blush 100%);
+  border-left: 8px solid $burgundy;
+  border-radius: 10px;
+  padding: 0.5em 0.9em;
+  margin-bottom: 0.7em;
+  font-size: 0.9em;
+}
+
+.reveal .prompt::before {
+  content: "Prompt";
+  display: block;
+  font-size: 0.65em;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: $plum;
+  font-weight: 600;
+}
+
+// Key takeaway box
+.reveal .takeaway {
+  background: rgba($blush, 0.55);
+  border-left: 8px solid $plum;
+  border-radius: 8px;
+  padding: 0.45em 0.8em;
+  margin-top: 0.6em;
+}
+
+// Big number tiles
+.reveal .stat {
+  background: white;
+  border: 1px solid rgba($burgundy, 0.15);
+  border-top: 6px solid $burgundy;
+  border-radius: 12px;
+  padding: 0.4em;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba($burgundy, 0.08);
+}
+
+.reveal .stat .num {
+  display: block;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.9em;
+  color: $burgundy;
+  line-height: 1.1;
+}
+
+.reveal .stat .lbl {
+  display: block;
+  font-size: 0.6em;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #7A6E68;
+}
+
+.reveal table th {
+  background: $burgundy;
+  color: $cream;
+}
+
+.reveal .footer {
+  color: $plum;
+  font-style: italic;
+}

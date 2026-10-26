@@ -1,0 +1,390 @@
+---
+title: "From Labelled Data to Clean Data"
+subtitle: "W10 Reflection: Working with SPSS Survey Data in R"
+author: "Julieta Diaz"
+institute: "IBM 6500, Cal Poly Pomona"
+date: "`r Sys.Date()`"
+format:
+  revealjs:
+    theme: [serif, reflection.scss]
+    width: 1600
+    height: 900
+    logo: images/logo.svg
+    footer: "W10 Reflection | Labelled Data and Survey Data Cleaning"
+    transition: slide
+    transition-speed: default
+    background-transition: fade
+    incremental: false
+    toc: true
+    toc-depth: 1
+    toc-title: "Agenda"
+    slide-number: true
+    menu: true
+    scrollable: true
+    smaller: true
+    code-fold: false
+    code-overflow: wrap
+    number-sections: false
+    number-depth: 5
+    embed-resources: true
+    css: styles.css
+editor: visual
+bibliography: references.bib
+csl: american-marketing-association.csl
+execute:
+  echo: true
+  warning: false
+  message: false
+  freeze: auto
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(tidyverse)
+library(haven)
+library(labelled)
+library(psych)
+library(knitr)
+```
+
+# Labelled Data and My CEP
+
+## What Is Labelled Data?
+
+::: prompt
+In Step 1, you learned how to read SPSS data into RStudio and conduct EDA and hypothesis testing. What is labelled data?
+:::
+
+:::: columns
+::: {.column width="55%"}
+**Labelled data** is data that carries its own **metadata** along with the numbers:
+
+::: incremental
+- A **variable label** describes what a column means (`q3` = "Employees are Courteous").
+- **Value labels** describe what each code means (`1` = "Strongly Disagree", `5` = "Strongly Agree").
+- Survey tools like **SPSS** and **Qualtrics** export this metadata in `.sav` files, and the `haven` package keeps it when R reads the file [@haven].
+:::
+:::
+
+::: {.column width="45%"}
+::: {.fragment .fade-left}
+::: takeaway
+A CSV or Excel export keeps only the numbers. A `.sav` file keeps the **questionnaire inside the data**, so I never have to guess what a `4` means.
+:::
+:::
+:::
+::::
+
+::: notes
+Start with the definition. Emphasize that the labels travel with the data, which is why Dr. Jung recommends reading SPSS files instead of CSV.
+:::
+
+## Labelled Data in Action: Case 31
+
+```{r}
+#| label: read-sav
+#| output-location: column
+case31 <- read_sav("data/Case 31 Data_efcu_1.sav")
+
+# Each column is a labelled vector
+class(case31$q3)
+
+# The variable label
+var_label(case31$q3)
+
+# The value labels
+val_labels(case31$q3)
+```
+
+The raw Case 31 file has **`r nrow(case31)` respondents** and **`r ncol(case31)` variables**.[^1]
+
+[^1]: Case 31 is the Employees Federal Credit Union case used in the CCIDM "Transitioning from SPSS to R" workshop.
+
+::: notes
+This code runs live when the deck renders. Point out the haven_labelled class and the labels that came straight from SPSS.
+:::
+
+## From Labels to Analysis
+
+::: panel-tabset
+### Add and fix labels
+
+```{r}
+#| label: set-labels
+five_pt_likert <- c("Strongly Disagree" = 1, "Disagree" = 2,
+                    "Uncertain" = 3, "Agree" = 4, "Strongly Agree" = 5)
+
+case31_clean <- case31 |>
+  set_value_labels(q3 = five_pt_likert, q4 = five_pt_likert,
+                   q5 = five_pt_likert, q6 = five_pt_likert) |>
+  set_variable_labels(q4 = "Employees are helpful",
+                      q5 = "Employees are professional",
+                      q6 = "Employees are available")
+
+case31_clean |> count(q3) |> mutate(percent = round(n / sum(n), 3))
+```
+
+### Check reliability
+
+```{r}
+#| label: reliability
+alpha_out <- case31_clean |>
+  select(q3:q6) |>
+  zap_labels() |>
+  psych::alpha()
+
+round(alpha_out$total$raw_alpha, 2)
+```
+
+Cronbach's alpha is **`r round(alpha_out$total$raw_alpha, 2)`**, well above the .70 cutoff [@cronbach1951; @psych], so the four items measure one construct.
+
+### Build a composite
+
+```{r}
+#| label: composite
+case31_clean <- case31_clean |>
+  mutate(at_emp = rowMeans(across(q3:q6), na.rm = TRUE)) |>
+  set_variable_labels(at_emp = "Attitude toward employee proficiency")
+
+describe(case31_clean$at_emp)[, c("n", "mean", "sd", "min", "max")]
+```
+
+### Reverse-code
+
+```{r}
+#| label: reverse
+# q9 runs high-to-low, so reverse it and relabel the new variable
+case31_clean <- case31_clean |>
+  mutate(q9r = 6 - as.numeric(q9)) |>
+  set_value_labels(q9r = c("Never" = 1, "Not Often Enough" = 2,
+                           "About Right" = 3, "Very Often" = 4,
+                           "Too Often" = 5))
+
+case31_clean |> count(q9, q9r)
+```
+:::
+
+::: notes
+Walk through the tabs in order: labels, reliability, composite, reverse coding. This is the same sequence Dr. Jung used in the Case 31 prep file.
+:::
+
+## Does My CEP Involve Labelled Data?
+
+::: prompt
+Does your MSDM CEP involve labelled data? Explain why or why not.
+:::
+
+:::: columns
+::: {.column width="50%"}
+### Mostly no, for my AO
+
+**AO3:** Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion.
+
+::: incremental
+- GA4 data comes from **BigQuery or CSV exports**, not SPSS.
+- Each row is an **event** (page view, add to cart, purchase), stored as plain text and numbers.
+- Codes like `cpc` or `organic` have no value labels attached, so I have to **create the meaning myself**.
+:::
+:::
+
+::: {.column width="50%"}
+### But labelled data still matters
+
+::: incremental
+- Our team's **customer survey** in Qualtrics will export as `.sav`, so those variables **will** be labelled.
+- I can **add labels to my GA4 data** with `labelled` [@labelled], for example labelling `medium` so `cpc` reads as "Paid search (CPC)".
+- Labels make the data **self-documenting** for teammates and the client.
+:::
+:::
+::::
+
+::: aside
+In my M06 deck, I mapped GA4 `medium` codes to readable channel names by hand. With `set_value_labels()`, that mapping would travel with the data.
+:::
+
+## Techniques Relevant to My AO
+
+::: prompt
+What techniques are relevant for your MSDM CEP? How might these approaches help you address your AO?
+:::
+
+| Technique | From this module | How it helps AO3 |
+|----------------------|----------------------|--------------------------------------|
+| `count()` + `mutate(percent)` | Used on every Case 31 and Covid variable | Spot odd codes in GA4 channels and events before analysis |
+| Labelling variables | `set_variable_labels()`, `view_df()` data dictionary | A clear dictionary of GA4 fields for my team |
+| Screening rules | Approved, consented, qualified respondents | Filter out **bot traffic**, internal visits, and duplicate events |
+| Consistency checks | Comparing related answers | Confirm purchases match a prior add-to-cart in the same session |
+| Descriptive analytics | EDA lecture: insight, then recommendation | Conversion rate by channel, funnel drop-off by step |
+| Chi-square test | Case 31 hypothesis testing | Test whether purchasing depends on paid vs. organic search |
+| t-test / composite scales | Case 31 attitude index | Compare trust and value ratings if we survey Farm Store shoppers |
+
+: Techniques from this module and how they apply to my analytics objective {#tbl-techniques}
+
+::: {.fragment}
+::: takeaway
+As the EDA lecture showed, **descriptive analytics alone can produce insights and recommendations**. Sample size also matters: a small difference can be significant in a large sample and not in a small one.
+:::
+:::
+
+# Cleaning the Covid-19 Survey
+
+## Initial Cleaning: Screening Who Counts
+
+::: prompt
+In Step 2, you saw the initial data cleaning process. Describe it and what lessons you got from it.
+:::
+
+:::: columns
+::: {.column width="50%"}
+**The study:** a post-pandemic survey about coffee shop and hospitality visits, collected through the **Prolific** consumer panel [@palan2018] in two waves (Nov to Dec 2023) and programmed in Qualtrics.
+
+**What was done:**
+
+1. **Screening survey** (about 2 minutes): only people who had visited a coffee shop and stayed 15+ minutes, age 18+, were invited. Only about **1 in 4** qualified.
+2. **Joined data:** Prolific CSV files (participant info) were joined with the Qualtrics `.sav` file (**1,185 rows, 209 variables**).
+3. **Kept paid, approved submissions**, plus a few returned or timed-out ones that were usable.
+4. **Re-asked the qualifying question** in the main study and removed people who contradicted their screener answer.
+5. Used **attention and comprehension checks** to remove bots and inattentive respondents [@oppenheimer2009].
+:::
+
+::: {.column width="50%"}
+::: {.fragment}
+### Lessons
+
+- **Read the `.sav`, not the CSV.** Labels carry the questionnaire into R.
+- **Design quality checks before fielding.** Re-asking the qualifier caught people the screener missed.
+- **Bad data costs money.** Every disqualified respondent had already been paid for the screener.
+- **Collect in waves.** Pausing after wave 1 (about 67% of the data) let the team check eligibility rates and budget before inviting more people.
+:::
+:::
+::::
+
+::: notes
+Key point: initial cleaning is about deciding WHO belongs in the data set.
+:::
+
+## Further Cleaning: Fixing What Is in the Data
+
+::: prompt
+In Step 3, you saw the next phase of data cleaning. Describe it and what the key takeaways are.
+:::
+
+::: panel-tabset
+### Recode
+
+Some 7-point items were stored as **1, 7, 8, 9, 10, 11, 12** because questions were deleted and re-added in Qualtrics, which silently renumbered the answer codes. They were recoded with `case_match()`:
+
+```r
+covid <- covid |>
+  mutate(notice_css = case_match(notice_css,
+                                 7 ~ 2, 8 ~ 3, 9 ~ 4,
+                                 10 ~ 5, 11 ~ 6, 12 ~ 7,
+                                 .default = notice_css))
+
+# Confirm a one-to-one match between old and new codes
+covid |> count(old_var, notice_css)
+```
+
+### Reverse-code
+
+Some items were **reverse-worded**. "I'm comfortable sharing a water bottle with a friend" runs opposite to "It bothers me when people sneeze without covering their mouth," so on a 7-point scale it was flipped with `8 - x`.
+
+```r
+covid <- covid |> mutate(share_bottle_r = 8 - share_bottle)
+```
+
+### Consistency checks
+
+Respondents rated how often they **noticed** prevention measures at the coffee shop. Mask wearing is the easiest to notice, so rating vaccination posters, hand sanitizing, or social distancing **higher** than masks was flagged as a failure.
+
+- 648 respondents never failed a check
+- 112 failed once, 31 failed twice
+
+### Exclusion rule
+
+A respondent was removed only if they **failed two or more checks AND** took an unusual amount of time (under 10 or over 30 minutes). This removed **9 people**. Other checks (unique IDs, consent) confirmed the earlier screening. The final sample was **736**.
+:::
+
+::: {.fragment}
+::: takeaway
+Further cleaning is about **what is inside the data**: wrong codes, reversed items, and answers that do not add up. Always confirm each recode with a `count()` of old vs. new values.
+:::
+:::
+
+## Comparing the Two Approaches
+
+::: prompt
+What are the big differences between the two approaches and the impact on the final sample size and response quality?
+:::
+
+| | Initial cleaning | Further cleaning |
+|------------------|-------------------------------|-------------------------------|
+| **Main question** | Who belongs in the data? | Are the values correct and believable? |
+| **Unit** | Whole respondents | Individual variables and answer patterns |
+| **Tools** | Screener, qualifier re-check, approval status, attention checks | `count()`, `case_match()`, reverse coding, consistency rules |
+| **When** | Before and right after fielding | During analysis prep, variable by variable |
+| **Effect on N** | Large drop | Small drop |
+| **Effect on quality** | Removes the wrong people and bots | Makes every remaining answer accurate and comparable |
+
+: Initial vs. further cleaning {#tbl-compare}
+
+## Impact on Sample Size
+
+```{r}
+#| label: fig-funnel
+#| echo: false
+#| fig-cap: "Approximate sample size at each stage of the Covid-19 study (from the lecture)"
+#| fig-width: 12
+#| fig-height: 4.6
+stages <- tibble(
+  stage = factor(c("Qualtrics responses", "After initial cleaning", "Final sample"),
+                 levels = c("Qualtrics responses", "After initial cleaning", "Final sample")),
+  n = c(1185, 800, 736)
+)
+
+ggplot(stages, aes(stage, n, fill = stage)) +
+  geom_col(width = 0.55, show.legend = FALSE) +
+  geom_text(aes(label = scales::comma(n)), vjust = -0.5, size = 6, colour = "#2B2326") +
+  scale_fill_manual(values = c("#CFE3F1", "#8A4B5E", "#6B2737")) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(x = NULL, y = "Respondents") +
+  theme_minimal(base_size = 18) +
+  theme(panel.grid.major.x = element_blank(), panel.grid.minor = element_blank())
+```
+
+:::: columns
+::: {.column width="50%"}
+::: {.fragment}
+**Initial cleaning** removed roughly **385 rows**: unqualified, unpaid, or inattentive respondents. That is the biggest drop, but it protects the whole analysis.
+:::
+:::
+
+::: {.column width="50%"}
+::: {.fragment}
+**Further cleaning** removed **about 64 more**, keeping **92%** of the 800. Most of its value was in **fixing** answers, not deleting people.
+:::
+:::
+::::
+
+::: aside
+The 800 figure is approximate: it reflects 799 unique Prolific IDs plus one ID shared by two different, valid respondents, which the team chose to keep.
+:::
+
+## What I Will Take Into My CEP
+
+::: incremental
+1. **Check before trusting.** Run `count()` on every variable I use, including GA4 channels and event names.
+2. **Screen first, then clean.** Filter out bots and internal traffic before fixing individual values.
+3. **Document everything in Quarto** so my team and the client can see each decision.
+4. **Balance strictness and sample size.** As Dr. Jung noted, being too picky can shrink the sample without improving quality.
+:::
+
+::: notes
+Close by tying the Covid study lessons back to my GA4 analysis for the Farm Store.
+:::
+
+## References
+
+::: {#refs}
+:::

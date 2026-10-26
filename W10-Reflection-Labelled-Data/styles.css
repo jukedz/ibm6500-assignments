@@ -1,0 +1,13 @@
+/* Plain CSS extras layered after reflection.scss */
+
+.reveal .small-note {
+  font-size: 0.6em;
+  color: #7A6E68;
+}
+
+.reveal .flow {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.1em;
+  color: #6B2737;
+  text-align: center;
+}
