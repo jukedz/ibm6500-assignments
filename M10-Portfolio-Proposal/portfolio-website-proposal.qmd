@@ -1,0 +1,283 @@
+---
+title: "Portfolio Website Project Proposal"
+subtitle: "A data-driven portfolio for a career in beauty marketing"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    css: submission.css
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    number-depth: 2
+    embed-resources: true
+    smooth-scroll: true
+    link-external-newwindow: true
+---
+
+::: intro-hero
+![](images/julieta-headshot.jpg){fig-alt="Headshot of Julieta Diaz"}
+
+::: {}
+[Hi, I'm Julieta]{.hi}
+
+[Here is the plan for my MSDM portfolio website]{.big}
+
+[See the current site](https://jukedz.github.io/msdm-portfolio/){.btn-pill} [View the GitHub repo](https://github.com/jukedz/msdm-portfolio){.btn-pill .outline}
+:::
+:::
+
+# Executive Summary {.unnumbered}
+
+My portfolio website will show hiring managers in the **beauty industry** that I can turn consumer data into marketing decisions. It will have four tabs: **Home**, **Digital Marketing Projects**, **Marketing Analytics Projects**, and **Resume**. Each project page will follow the structure of a typical analytics report: the business problem, the data, the research questions, the methods, the results, and the recommendations.
+
+::: {.callout-tip icon="false"}
+## At a glance
+
+- **4 tabs** on the finished website
+- **3 digital marketing projects** and **4 marketing analytics projects**
+- **Analytics projects** include the website's own GA4 traffic analysis and a Revealjs presentation, both listed under the Marketing Analytics Projects tab
+- **Methods** drawn from my MSDM courses: funnel analysis, chi-square tests, t-tests and ANOVA, regression, and reliability analysis
+:::
+
+# Website Structure
+
+## Site Map
+
+```{mermaid}
+%%| label: fig-sitemap
+%%| fig-cap: "Planned site map for the portfolio website"
+flowchart LR
+  H[Home] --> D[Digital Marketing Projects]
+  H --> M[Marketing Analytics Projects]
+  H --> R[Resume]
+  D --> D1[DM1: Google Shopping Ads Plan]
+  D --> D2[DM2: Juke Vintage E-commerce Store]
+  D --> D3[DM3: Golf Performance Lab Plan]
+  M --> M1[MA1: Paid vs. Organic Search]
+  M --> M2[MA2: Portfolio Website Traffic in GA4]
+  M --> M3[MA3: Revealjs Insights Presentation]
+  M --> M4[MA4: Influencer vs. Traditional Ad Experiment]
+```
+
+## Tabs and How They Will Be Built
+
+| Tab | Purpose | How it will be built in Quarto |
+|------------------|----------------------------------|----------------------------------|
+| Home | Introduce me, my goals, skills, and education | Custom hero layout, skill pills, education timeline |
+| Digital Marketing Projects | Show campaign planning and e-commerce work | A grid **listing** of project pages, filtered by category |
+| Marketing Analytics Projects | Show data analysis, dashboards, and presentations | A grid **listing** of project pages, including the GA4 traffic analysis and the Revealjs deck |
+| Resume | Summarize my experience in a recruiter-friendly format | A resume page plus a downloadable PDF built with the `vitae` R package |
+
+: Planned tabs on the portfolio website {#tbl-tabs}
+
+::: {.callout-note}
+## Changes from my current site
+
+The current site (built for M10 Hands-on Practice) has Home, CEP Dashboard, Styling with SCSS, and Portfolio Listings tabs. For the final version, the CEP dashboard moves into **Marketing Analytics Projects**, the listings feature powers both project tabs, the SCSS styling stays in place behind the scenes, and a **Resume** tab is added.
+:::
+
+# Home Page
+
+The home page is already live and will be refined over the term.
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| Photo and intro | A "Hi, I'm Julieta Diaz" banner with my photo in a polaroid-style frame |
+| Bio | Psychology background, MSDM training, public sector work, and my vintage resale shop, Juke Vintage |
+| Career aspirations | Transition into the beauty industry and grow into a data-driven marketing leadership role |
+| Skills | R, Quarto, SQL, BigQuery, GA4, Google Ads, Qualtrics, Shopify, GitHub, Canva |
+| Education | MSDM, Cal Poly Pomona (expected Summer 2027); Bachelor's in Psychology, CSU San Bernardino (2021) |
+| Call to action | Buttons linking to my projects, my resume, and LinkedIn |
+
+: Home page contents {#tbl-home}
+
+# Digital Marketing Projects
+
+Each project below will become its own page under the **Digital Marketing Projects** tab.
+
+| \# | Project | Data and source | Audience |
+|------|---------------------------|----------------------------|-------------------|
+| DM1 | Google Shopping Ads Plan for CPP Farm Store Gift Baskets | Farm Store product catalog, Google Ads coursework, competitor research | Farm Store manager |
+| DM2 | Juke Vintage E-commerce Store and Customer Journey | My Shopify store, GA4 property, Depop inventory | Small fashion resale owners |
+| DM3 | Digital Marketing Plan for Golf Performance Lab | Client presentation, client and competitor websites | Golf Performance Lab owner |
+
+: Digital marketing projects overview {#tbl-dm}
+
+## DM1: Google Shopping Ads Plan for CPP Farm Store Gift Baskets
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | Farm Store gift basket catalog and pricing, my product copy for six gift baskets, Google Shopping Ads certification coursework, and competitor listings from Google Shopping |
+| **Managerial problem** | The Farm Store sells gift baskets online but has little search visibility, so shoppers searching for local gift baskets find competitors first |
+| **Target audience** | CPP Farm Store manager |
+| **Research questions** | (1) Which search terms and product attributes do gift basket shoppers respond to? (2) What campaign structure, budget, and bidding strategy fit a small university store? (3) Which KPIs should define success? |
+| **Expected impact** | A ready-to-launch Shopping campaign plan that increases qualified traffic and online gift basket sales, especially before holidays |
+| **Methods** | Competitive analysis, keyword research, campaign objective and target audience analysis, KPI framework (CTR, CPC, conversion rate, ROAS), and a test plan for comparing ad variations |
+
+## DM2: Juke Vintage E-commerce Store and Customer Journey
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | My Juke Vintage Shopify store (catalog, collections, checkout settings), its GA4 property, and my Depop sales inventory |
+| **Managerial problem** | A one-person resale shop needs a trustworthy, easy-to-shop storefront that turns browsers into buyers |
+| **Target audience** | Small fashion and resale business owners (and me, as the owner) |
+| **Research questions** | (1) Where in the customer journey do shoppers drop off? (2) Which trust signals and merchandising choices make the store feel credible? (3) What should the owner track in GA4? |
+| **Expected impact** | A clearer customer journey, stronger trust signals at checkout, and a measurement plan for future sales growth |
+| **Methods** | Customer journey mapping, merchandising and storefront audit, GA4 setup and event tracking, and funnel analysis of the realtime and engagement reports |
+
+## DM3: Digital Marketing Plan for Golf Performance Lab
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | Client presentation (Dr. Michelle Yoo), the client website, and competitor websites |
+| **Managerial problem** | An indoor golf instruction facility in Los Angeles needs more foot traffic and digital traffic |
+| **Target audience** | Golf Performance Lab owner |
+| **Research questions** | (1) Who are the facility's most valuable customer segments? (2) How does it compare with local competitors online? (3) Which channels and messages will grow traffic most efficiently? |
+| **Expected impact** | A multi-part digital marketing plan with clear priorities for channels, content, and measurement |
+| **Methods** | Company overview, market and competitor analysis, SWOT, segmentation and targeting, channel strategy, and a KPI dashboard plan (group project with Danielle Meza, Cecilia Espina, and Georgia Monjarrez) |
+
+# Marketing Analytics Projects
+
+Each project below will become its own page under the **Marketing Analytics Projects** tab. As required, the website traffic analysis (MA2) and the Revealjs presentation (MA3) are listed here as projects rather than as separate tabs.
+
+| \# | Project | Data and source | Audience |
+|------|---------------------------|----------------------------|-------------------|
+| MA1 | Paid vs. Organic Search for the CPP Farm Store | GA4 e-commerce data via BigQuery (Farm Store data when available) | Farm Store manager |
+| MA2 | Portfolio Website Traffic Analysis in GA4 | GA4 property installed on this website | Me, as owner of my personal brand |
+| MA3 | Revealjs Insights Presentation | Results from MA1 | CEP client and faculty lead |
+| MA4 | Influencer vs. Traditional Ad Experiment | Qualtrics survey with random assignment | Brand marketing manager |
+
+: Marketing analytics projects overview {#tbl-ma}
+
+## MA1: Paid vs. Organic Search for the CPP Farm Store
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | GA4 event data. Until the Farm Store's GA4 access is confirmed, I am using Google's public GA4 sample e-commerce dataset (`bigquery-public-data.ga4_obfuscated_sample_ecommerce`), which has the same schema, queried with SQL in BigQuery |
+| **Managerial problem** | The Farm Store has limited search visibility and needs to know whether paying for Google Shopping Ads would produce more buyers, or whether organic SEO is the better investment |
+| **Target audience** | CPP Farm Store manager and the CEP faculty lead |
+| **Research questions** | (1) Do conversion rates differ between paid and organic search? (2) At which funnel step does each channel lose the most visitors? (3) Would a Shopping Ads test be worth the budget? |
+| **Expected impact** | An evidence-based recommendation on whether to invest in Shopping Ads, strengthen SEO, or do both, before the store spends money |
+| **Methods** | SQL extraction in BigQuery, funnel analysis, chi-square test of independence (purchase by channel), two-proportion comparison of conversion rates, and a Quarto dashboard |
+
+::: {.callout-note}
+## Early result on sample data
+
+In the GA4 sample store, paid search converted at about 0.98% vs. 1.18% for organic search (chi-square = 4.55, p = .033). This is already shown in the [CEP dashboard](https://jukedz.github.io/msdm-portfolio/cep-dashboard.html) on my current site.
+:::
+
+## MA2: Portfolio Website Traffic Analysis in GA4
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | A GA4 property connected to this website (tracking tag added through `_quarto.yml`), collecting users, sessions, traffic sources, page views, engagement time, and outbound clicks |
+| **Managerial problem** | A portfolio only helps a job search if the right people find it and engage with it. I need to know who visits, how they arrive, and which projects hold their attention |
+| **Target audience** | Me, as the owner of my personal brand, and the MSDM program as an example for future students |
+| **Research questions** | (1) Which channels (LinkedIn, direct, GitHub, search) bring the most engaged visitors? (2) Which pages and projects get the most views and engagement time? (3) Does sharing the site on LinkedIn change weekly traffic? |
+| **Expected impact** | Data to decide which projects to feature, where to promote the site, and how to improve navigation so recruiters reach my resume |
+| **Methods** | GA4 acquisition and engagement reports, descriptive statistics, a time-series view of weekly users, chi-square test of engagement by channel, and a before vs. after comparison around LinkedIn posts |
+
+::: {.callout-warning}
+## Data limitation
+
+A new portfolio site will have a small number of visitors, so results will be descriptive and directional rather than conclusive. I will report sample sizes alongside every finding.
+:::
+
+## MA3: Revealjs Insights Presentation
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | Results from MA1, presented as a Quarto Revealjs slide deck. A first version is already published: [Paid vs. Organic Search proposal deck](https://jukedz.github.io/ibm6500-assignments/M06-1-Revealjs-Presentation/farm-store-ao4-presentation.html) |
+| **Managerial problem** | Analysis only creates value when decision makers understand it quickly. The client needs a clear story, not raw output |
+| **Target audience** | CEP client (Farm Store manager) and the faculty lead |
+| **Research questions** | (1) What is the one recommendation the client should act on? (2) Which two or three visuals best support it? |
+| **Expected impact** | Faster, more confident decisions by the client, and a reusable presentation template for future CEP updates |
+| **Methods** | Data storytelling (problem, insight, recommendation), reproducible charts built in R inside the slides, speaker notes, a custom SCSS theme, and incremental reveals |
+
+## MA4: Influencer vs. Traditional Ad Experiment
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Data and source** | A Qualtrics survey experiment I designed in IBM 6500, in which respondents are randomly assigned to see either a social media opinion leader review or a traditional ad for a Nike product |
+| **Managerial problem** | Brands are shifting budget toward influencers, but they need evidence that influencer content actually lifts purchase intention compared with traditional ads |
+| **Target audience** | Brand marketing manager deciding how to split budget between influencer and traditional advertising |
+| **Research questions** | (1) Does ad type affect purchase intention and attitude toward the brand? (2) Does social media usage moderate the effect? |
+| **Expected impact** | Guidance on when influencer content is worth the investment, which transfers directly to beauty brands, where influencer marketing is central |
+| **Methods** | Randomized experiment, reliability analysis (Cronbach's alpha) for multi-item scales, independent-samples t-test, two-way ANOVA for the moderation question, and data wrangling in R |
+
+# Resume
+
+My current resume (2025) is written for social services and public sector roles. For the portfolio, I will rebuild it for **digital marketing and marketing analytics** roles, keeping my real experience but reframing it around the skills beauty brands hire for.
+
+| Element | Plan |
+|------------------|-------------------------------------------------------|
+| **Format** | A resume page on the website plus a downloadable PDF built with the `vitae` R package, so it stays reproducible and matches the site's styling |
+| **Headline** | Digital Marketing and Consumer Insights, MSDM Candidate (replacing "Staff Analyst") |
+| **Summary** | Psychology-trained, bilingual (English and Spanish) marketer who uses data to understand consumer behavior |
+| **Education** | MSDM, Cal Poly Pomona (expected Summer 2027); B.A. Psychology, CSU San Bernardino (2021) |
+| **Experience** | Contracts Staff Analyst, Preschool Services Department, San Bernardino County (2025 to present); Owner, Juke Vintage resale shop; earlier roles in behavior intervention and case management condensed into one section |
+| **Projects** | Selected digital marketing and marketing analytics projects, each linked to its page on the website |
+| **Skills** | Technical: R, Quarto, SQL, BigQuery, GA4, Google Ads, Qualtrics, Shopify, GitHub, Canva. Professional: data collection and analysis, vendor evaluation, reporting, cross-department communication |
+| **Certifications** | Google Analytics Certification (2026), CITI Human Subjects Research (2026), CPR, First Aid, and Basic Life Support |
+| **Audience** | Recruiters and hiring managers in beauty and consumer brand marketing |
+
+: Resume plan {#tbl-resume}
+
+::: {.callout-note}
+## Reframing my experience for marketing
+
+| Current experience | Marketing-relevant skill it shows |
+|----------------------------|------------------------------------------|
+| Reviewing vendor proposals and running RFPs | Evaluating partners and agencies with clear criteria |
+| Preparing reports and summaries for board approvals | Turning data into clear recommendations for decision makers |
+| Tracking deliverables and vendor performance in databases | KPI tracking and performance measurement |
+| Building data collection systems for IEP goals | Designing measurement plans and analyzing progress data |
+| Leading group conversations and serving as a Spanish interpreter | Understanding diverse audiences and bilingual communication |
+
+: How my current experience translates to marketing {#tbl-reframe}
+:::
+
+::: {.callout-warning}
+## Privacy on a public website
+
+The online version will list only my email, LinkedIn, and GitHub. My home address and phone number will stay off the public site and appear only on PDFs I send directly to employers.
+:::
+
+# Timeline
+
+| Week | Milestone |
+|------------------|---------------------------------------------------------|
+| Week 10 | Proposal submitted; home page and site structure live |
+| Weeks 11 to 12 | Build the Digital Marketing Projects listing and pages (DM1 to DM3); add the GA4 tag for MA2 |
+| Weeks 13 to 14 | Build the Marketing Analytics Projects pages (MA1, MA3, MA4); collect MA2 traffic data |
+| Week 15 | Add the resume page and PDF; analyze MA2 traffic data |
+| Final | Polish, proofread, test all links, and publish the final website |
+
+: Planned timeline {#tbl-timeline}
+
+# Next Steps {.unnumbered}
+
+1. Restructure the navbar into Home, Digital Marketing Projects, Marketing Analytics Projects, and Resume.
+2. Add the GA4 tracking tag to `_quarto.yml` so MA2 starts collecting data right away.
+3. Swap Farm Store GA4 data into MA1 if access is granted; otherwise keep the sample data, clearly labeled.
+4. Build each project page using the same analytics report structure: problem, data, research questions, methods, results, and recommendations.
+
+# Appendix: Links {.unnumbered}
+
+**This proposal**
+
+- [This proposal on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/M10-Portfolio-Proposal/portfolio-website-proposal.html)
+- [This proposal's source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/M10-Portfolio-Proposal)
+
+**My portfolio website**
+
+- [Current website](https://jukedz.github.io/msdm-portfolio/)
+- [Website GitHub repository](https://github.com/jukedz/msdm-portfolio)

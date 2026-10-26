@@ -1,0 +1,94 @@
+/* Layout pieces for the submission report */
+.intro-hero {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 1.6rem;
+  align-items: center;
+  background: linear-gradient(135deg, #CFE3F1 0%, #E6F0F7 50%, #F7E6E8 100%);
+  border-radius: 1.2rem;
+  padding: 1.6rem 1.8rem;
+  margin: 0.5rem 0 1.8rem;
+}
+
+.intro-hero img {
+  width: 150px;
+  border: 8px solid #FFFFFF;
+  box-shadow: 0 12px 26px rgba(107, 39, 55, 0.18);
+  transform: rotate(-2deg);
+}
+
+.intro-hero .hi {
+  font-family: "Pinyon Script", cursive;
+  color: #8A4B5E;
+  font-size: 1.8rem;
+}
+
+.intro-hero .big {
+  font-family: "Playfair Display", Georgia, serif;
+  color: #6B2737;
+  font-size: 1.7rem;
+  font-weight: 700;
+  line-height: 1.15;
+  margin-bottom: 0.8rem;
+}
+
+/* Browser-window frame around page previews */
+.browser {
+  border-radius: 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(107, 39, 55, 0.15);
+  box-shadow: 0 14px 32px rgba(107, 39, 55, 0.12);
+  margin: 1rem 0 1.2rem;
+  background: #FFFFFF;
+}
+
+.browser .bar {
+  background: #F1EBE1;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.78rem;
+  color: #7A6E68;
+  border-bottom: 1px solid rgba(107, 39, 55, 0.1);
+}
+
+.browser .dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+  background: #F3D9DC;
+}
+
+.browser img {
+  display: block;
+  width: 100%;
+  margin: 0;
+}
+
+.browser p,
+.browser figure {
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .intro-hero {
+    grid-template-columns: 1fr;
+  }
+}
+/* ---------- Big pull quote ---------- */
+.pull-quote {
+  font-family: "Playfair Display", Georgia, serif;
+  font-style: italic;
+  font-size: 1.35rem;
+  color: #6B2737;
+  border-left: 4px solid #6B2737;
+  padding: 0.4rem 0 0.4rem 1.2rem;
+  margin: 1.2rem 0 1.8rem;
+}
+
+/* Left-align table text for readability */
+table th,
+table td {
+  text-align: left !important;
+  vertical-align: top;
+}
