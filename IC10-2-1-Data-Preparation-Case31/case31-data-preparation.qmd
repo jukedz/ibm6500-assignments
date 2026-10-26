@@ -1,0 +1,591 @@
+---
+title: "Data Preparation with Case 31"
+subtitle: "IC10-2-1 | Employees Federal Credit Union (EFCU) Member Opinion Survey"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    number-depth: 2
+    embed-resources: true
+    smooth-scroll: true
+    code-copy: true
+    code-tools: true
+    df-print: kable
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Overview {.unnumbered}
+
+This report prepares the raw SPSS data from **Case 31: Employees Federal Credit Union** for analysis in R. Following the M08 data preparation procedure, I:
+
+1.  give each respondent an ID,
+2.  check and fix variable names, variable labels, and value labels,
+3.  assign the correct **scale of measurement** to each variable,
+4.  handle missing and "no answer / no opinion" codes,
+5.  reverse code questions where a higher number meant a *lower* amount of the concept,
+6.  run frequencies to check for errors and outliers,
+7.  run **reliability** and **factor analysis** on each multi-item measure, and
+8.  create a **composite index** for each construct.
+
+::: callout-note
+## Data and questionnaire
+
+The raw data file is `data/Case 31 Data_efcu_1.sav` (SPSS format). Questions 1, 2, 28, 29, 35, 36, 39, and 40 are not in the file. Questions 1 and 2 were left out by the credit union because they are sensitive, and the others are open-ended. Every decision below was checked against the questionnaire (Case Exhibit 31.1) and the coding guide (Case Exhibit 31.2).
+:::
+
+# Load Packages
+
+```{r}
+#| label: packages
+
+# install.packages(c("tidyverse", "haven", "labelled", "psych"))  # run once if needed
+library(tidyverse)  # data wrangling (dplyr, tidyr, ggplot2)
+library(haven)      # read SPSS .sav files
+library(labelled)   # work with variable and value labels
+library(psych)      # reliability (alpha) and factor analysis
+```
+
+# Import the Raw Data
+
+```{r}
+#| label: import
+
+raw <- read_sav("data/Case 31 Data_efcu_1.sav")
+dim(raw)
+```
+
+The raw file has **128 respondents** and **34 variables**.
+
+## Data Dictionary (Before Cleaning)
+
+`look_for()` from the **labelled** package builds a data dictionary showing each variable's name, label, and value labels.
+
+```{r}
+#| label: dict-before
+
+look_for(raw) |>
+  convert_list_columns_to_character() |>
+  select(pos, variable, label, value_labels)
+```
+
+::: callout-warning
+## Problems found in the raw data
+
+- **No respondent ID**, so individual cases cannot be referenced.
+- **`q8` has the wrong variable label.** It reads "statement frequency" (a copy of `q9`), but Question 8 asks about the **rates charged to borrow funds**.
+- **Incomplete value labels.** Q3 to Q6 and Q30 to Q34 only label 1 and 5; Q13 to Q26 are missing the label for 3 ("Unaware of Service"); Q12 has a value of 3 ("no answer") with no label.
+- **`q12` uses 3 for "no answer"** (22 respondents), which must be treated as missing, not as a real answer.
+- **Two duplicate composite columns** (`OverallEmployeePerformace` and `employeeperformance`) are identical and unlabeled. I drop them and rebuild the composite myself so the process is documented.
+- **Reverse-coded items:** in Q7, Q8, Q9, Q10, Q13 to Q26, and Q37, a *lower* number means *more* of the concept (for example, 1 = "Very High").
+:::
+
+```{r}
+#| label: duplicate-check
+
+# Confirm the two prebuilt composite columns are identical
+all.equal(as.numeric(raw$OverallEmployeePerformace), as.numeric(raw$employeeperformance))
+```
+
+# Basic Cleaning
+
+## Respondent ID and Duplicate Columns
+
+```{r}
+#| label: id
+
+efcu <- raw |>
+  mutate(id = row_number(), .before = 1) |>
+  select(-OverallEmployeePerformace, -employeeperformance)
+```
+
+## Variable Labels
+
+I rewrite every variable label to match the wording on the questionnaire. This also fixes the wrong label on `q8`.
+
+```{r}
+#| label: var-labels
+
+efcu <- efcu |>
+  set_variable_labels(
+    id  = "Respondent ID",
+    q3  = "Q3. CU employees are courteous",
+    q4  = "Q4. CU employees are helpful",
+    q5  = "Q5. CU employees are professional",
+    q6  = "Q6. CU employees are always available",
+    q7  = "Q7. Rates CU pays on share (savings) accounts",
+    q8  = "Q8. Rates CU charges members to borrow funds",
+    q9  = "Q9. How often you receive a financial statement",
+    q10 = "Q10. Accuracy of statements",
+    q11 = "Q11. Statements are easy to understand",
+    q12 = "Q12. CU keeps account information confidential",
+    q13 = "Q13. Awareness: regular share accounts",
+    q14 = "Q14. Awareness: special subaccounts",
+    q15 = "Q15. Awareness: Christmas club accounts",
+    q16 = "Q16. Awareness: individual retirement accounts",
+    q17 = "Q17. Awareness: MasterCard credit cards",
+    q18 = "Q18. Awareness: signature loans",
+    q19 = "Q19. Awareness: new car loans",
+    q20 = "Q20. Awareness: late model car loans",
+    q21 = "Q21. Awareness: older model car loans",
+    q22 = "Q22. Awareness: household goods/appliance loans",
+    q23 = "Q23. Awareness: recreational loans",
+    q24 = "Q24. Awareness: share collateralized loans",
+    q25 = "Q25. Awareness: IRA loans",
+    q26 = "Q26. Awareness: line of credit loans",
+    q27 = "Q27. Currently have a loan with the CU",
+    q30 = "Q30. CU loan rates are lower than other institutions",
+    q31 = "Q31. CU personnel keep my financial information confidential",
+    q32 = "Q32. CU is prompt in processing loan applications",
+    q33 = "Q33. CU services meet the needs of its members",
+    q34 = "Q34. CU loan applications are simple and easy",
+    q37 = "Q37. Overall, how well the CU is managed and operated",
+    q38 = "Q38. Live in the headquarters area"
+  )
+```
+
+## Value Labels
+
+The labels follow the coding guide in Case Exhibit 31.2. I complete the missing labels so every value has a meaning.
+
+```{r}
+#| label: value-labels
+
+agree_5 <- c("Strongly disagree" = 1, "Disagree" = 2, "Uncertain" = 3,
+             "Agree" = 4, "Strongly agree" = 5)
+yes_no  <- c("Yes" = 1, "No" = 2)
+aware_3 <- c("Aware and have used" = 1, "Aware but have not used" = 2,
+             "Unaware of service" = 3)
+
+# Helper: apply a set of value labels while keeping each variable label
+add_labels <- function(x, labels) {
+  labelled(as.numeric(x), labels = labels, label = var_label(x))
+}
+
+efcu <- efcu |>
+  mutate(
+    across(c(q3:q6, q30:q34), ~ add_labels(.x, agree_5)),
+    across(q7:q8, ~ add_labels(.x, c("Very high" = 1, "High" = 2, "Average" = 3,
+                                     "Low" = 4, "Very low" = 5, "No opinion" = 6))),
+    q9  = add_labels(q9, c("Too often" = 1, "Very often" = 2, "About right" = 3,
+                           "Not often enough" = 4, "Never" = 5)),
+    q10 = add_labels(q10, c("Excellent" = 1, "Good" = 2, "Fair" = 3, "Poor" = 4)),
+    across(c(q11, q27, q38), ~ add_labels(.x, yes_no)),
+    q12 = add_labels(q12, c(yes_no, "No answer" = 3)),
+    across(q13:q26, ~ add_labels(.x, aware_3)),
+    q37 = add_labels(q37, c("Excellent" = 1, "Good" = 2, "Average" = 3,
+                            "Poor" = 4, "Very poor" = 5, "No opinion" = 6))
+  )
+```
+
+## Missing Values and Special Codes
+
+"No opinion" (6) on Q7, Q8, and Q37 and "No answer" (3) on Q12 are not points on the scale, so they become `NA`. In this file, "No opinion" on Q7, Q8, and Q37 was already left blank; the code below makes the rule explicit and catches Q12.
+
+```{r}
+#| label: missing
+
+efcu <- efcu |>
+  mutate(
+    across(c(q7, q8, q37), ~ replace(.x, .x == 6, NA)),
+    q12 = replace(q12, q12 == 3, NA)
+  )
+
+# Missing values per variable (only variables with any missing shown)
+efcu |>
+  summarise(across(everything(), ~ sum(is.na(.x)))) |>
+  pivot_longer(everything(), names_to = "variable", values_to = "n_missing") |>
+  filter(n_missing > 0)
+```
+
+# Scales of Measurement
+
+Every variable gets a scale of measurement based on what its numbers mean. In R, the scale is expressed through the variable type: **nominal** variables become unordered factors, **ordinal** variables become ordered factors, and **interval** variables stay numeric so they can be averaged.
+
+| Variables | Response format | Scale | R type |
+|-----------------|----------------------|-----------------|-----------------|
+| `id` | Respondent number | Nominal | integer (identifier only) |
+| Q3 to Q6, Q30 to Q34 | 5-point Likert, strongly disagree to strongly agree | Interval | numeric |
+| Q7, Q8 | Very high to very low | Interval (rating scale, after reverse coding) | numeric |
+| Q9 | Too often to never | Ordinal | numeric for recoding, ordered factor for reporting |
+| Q10 | Excellent to poor | Interval (rating scale, after reverse coding) | numeric |
+| Q37 | Excellent to very poor | Interval (rating scale, after reverse coding) | numeric |
+| Q13 to Q26 | Aware and used / aware not used / unaware | Ordinal | numeric for the awareness index |
+| Q11, Q12, Q27, Q38 | Yes / No | Nominal | factor |
+
+: Scale of measurement for each variable
+
+::: callout-tip
+## Why Likert items are treated as interval
+
+A Likert item has the properties of an ordinal scale (5 is more agreement than 4), and researchers assume the distance between each point is equal. That equal-interval assumption is what lets us **average** items into a composite index.
+:::
+
+# Reverse Coding
+
+A higher number should always mean **more** of the concept. In these items the coding guide runs the other way, so I create a new reversed variable with an `r` suffix and keep the original. The formula is **(highest code + 1) minus the original value**.
+
+| Item(s) | Original coding | Formula | New coding |
+|-----------------|--------------------|-----------------|-------------------|
+| Q7, Q8 | 1 = very high, 5 = very low | `6 - x` (after "no opinion" set to `NA`) | 1 = very low, 5 = very high |
+| Q9 | 1 = too often, 5 = never | `6 - x` | 1 = never, 5 = too often |
+| Q10 | 1 = excellent, 4 = poor | `5 - x` | 1 = poor, 4 = excellent |
+| Q13 to Q26 | 1 = aware and used, 3 = unaware | `4 - x` | 1 = unaware, 3 = aware and used |
+| Q37 | 1 = excellent, 5 = very poor | `6 - x` (after "no opinion" set to `NA`) | 1 = very poor, 5 = excellent |
+
+: Reverse coding plan
+
+```{r}
+#| label: reverse
+
+efcu <- efcu |>
+  mutate(
+    across(c(q7, q8, q9, q37), ~ 6 - as.numeric(.x), .names = "{.col}r"),
+    q10r = 5 - as.numeric(q10),
+    across(q13:q26, ~ 4 - as.numeric(.x), .names = "{.col}r")
+  )
+```
+
+The new variables get their own labels so the direction is clear.
+
+```{r}
+#| label: reverse-labels
+
+aware_r <- c("Unaware of service" = 1, "Aware but have not used" = 2,
+             "Aware and have used" = 3)
+
+efcu <- efcu |>
+  mutate(
+    across(q7r:q8r, ~ add_labels(.x, c("Very low" = 1, "Low" = 2, "Average" = 3,
+                                       "High" = 4, "Very high" = 5))),
+    q9r  = add_labels(q9r, c("Never" = 1, "Not often enough" = 2, "About right" = 3,
+                             "Very often" = 4, "Too often" = 5)),
+    q37r = add_labels(q37r, c("Very poor" = 1, "Poor" = 2, "Average" = 3,
+                              "Good" = 4, "Excellent" = 5)),
+    q10r = add_labels(q10r, c("Poor" = 1, "Fair" = 2, "Good" = 3, "Excellent" = 4)),
+    across(q13r:q26r, ~ add_labels(.x, aware_r))
+  )
+
+# Copy each original label and add "(reversed)"
+for (v in c("q7", "q8", "q9", "q10", paste0("q", 13:26), "q37")) {
+  var_label(efcu[[paste0(v, "r")]]) <- paste(var_label(efcu[[v]]), "(reversed)")
+}
+```
+
+## Check the Recodes
+
+A cross-tab of the original and reversed values confirms each value flipped correctly.
+
+```{r}
+#| label: recode-check
+
+efcu |> count(q7, q7r)
+efcu |> count(q10, q10r)
+efcu |> count(q13, q13r)
+efcu |> count(q37, q37r)
+```
+
+# Frequencies and Error Checks
+
+## Out-of-Range Values
+
+Every value should fall inside the range allowed by the questionnaire. Any count above zero would signal a data entry error.
+
+```{r}
+#| label: range-check
+
+ranges <- tribble(
+  ~vars,                                   ~min, ~max,
+  c(paste0("q", 3:6), paste0("q", 30:34)), 1,    5,
+  c("q7", "q8", "q9", "q37"),              1,    5,
+  "q10",                                   1,    4,
+  paste0("q", 13:26),                      1,    3,
+  c("q11", "q12", "q27", "q38"),           1,    2
+)
+
+ranges |>
+  rowwise() |>
+  mutate(
+    n_out_of_range = sum(sapply(vars, \(v) {
+      x <- as.numeric(efcu[[v]])
+      sum(x < min | x > max, na.rm = TRUE)
+    })),
+    vars = paste(vars, collapse = ", ")
+  ) |>
+  ungroup()
+```
+
+All values are within range, so there are no impossible values or outliers to fix.
+
+## Straight-Lining Check
+
+The procedure asks whether anyone answered "all 5's." I check for respondents who gave the identical answer to every agreement item (Q3 to Q6 and Q30 to Q34).
+
+```{r}
+#| label: straightline
+
+efcu |>
+  mutate(n_unique = apply(across(c(q3:q6, q30:q34), as.numeric), 1,
+                          \(r) length(unique(r)))) |>
+  filter(n_unique == 1) |>
+  select(id, q3:q6, q30:q34)
+```
+
+Eight respondents (IDs 1, 5, 6, 10, 62, 70, 77, and 79) gave the same answer to all nine agreement items. None of them answered all 5's; each chose "Agree" (4) or "Uncertain" (3) throughout. A consistent mid-scale pattern is believable for a satisfied but not enthusiastic member, so I **flag but keep** these cases rather than deleting them.
+
+## Frequency Tables
+
+```{r}
+#| label: freq-fn
+
+# Frequency table with value labels and valid percentages
+freq <- function(data, var) {
+  data |>
+    mutate({{ var }} := as_factor({{ var }})) |>
+    count({{ var }}) |>
+    mutate(percent = round(100 * n / sum(n), 1))
+}
+```
+
+::: panel-tabset
+### Employees (Q3 to Q6)
+
+```{r}
+#| label: freq-employees
+
+efcu |>
+  select(q3:q6) |>
+  pivot_longer(everything(), names_to = "item", values_to = "value") |>
+  count(item, value) |>
+  pivot_wider(names_from = value, values_from = n, values_fill = 0,
+              names_sort = TRUE)
+```
+
+Most members agree or strongly agree that employees are courteous, helpful, professional, and available. Nobody strongly disagreed with any of the four.
+
+### Rates (Q7r, Q8r)
+
+```{r}
+#| label: freq-rates
+
+freq(efcu, q7r)
+freq(efcu, q8r)
+```
+
+### Statements (Q9 to Q12)
+
+```{r}
+#| label: freq-statements
+
+freq(efcu, q9)
+freq(efcu, q10r)
+freq(efcu, q11)
+freq(efcu, q12)
+```
+
+### Overall (Q37r, Q38)
+
+```{r}
+#| label: freq-overall
+
+freq(efcu, q37r)
+freq(efcu, q38)
+```
+:::
+
+# Multi-Item Measures
+
+The questionnaire has three groups of items that measure one construct together:
+
+| Construct | Items | Name of composite |
+|-------------------------|------------------------|------------------------|
+| Attitude toward CU employees | Q3, Q4, Q5, Q6 | `att_employee` |
+| Attitude toward CU operations and lending | Q30, Q31, Q32, Q33, Q34 | `att_cu` |
+| Awareness of CU services | Q13r to Q26r | `awareness` |
+
+: Multi-item measures
+
+For each one, I run a **reliability analysis** (Cronbach's alpha) and an **exploratory factor analysis** before averaging the items. An alpha of **0.70 or higher** is the usual standard for acceptable reliability, and a one-factor solution with loadings of about **0.40 or higher** supports treating the items as one construct.
+
+## Attitude Toward Employees (Q3 to Q6)
+
+```{r}
+#| label: rel-employee
+
+emp_items <- efcu |> select(q3:q6) |> mutate(across(everything(), as.numeric))
+alpha_emp <- psych::alpha(emp_items)
+alpha_emp$total |> select(raw_alpha, std.alpha, average_r) |> round(3)
+alpha_emp$alpha.drop |> select(raw_alpha) |> round(3)
+```
+
+```{r}
+#| label: efa-employee
+
+fa_emp <- fa(emp_items, nfactors = 1, fm = "pa")
+print(fa_emp$loadings, cutoff = 0)
+```
+
+## Attitude Toward CU Operations (Q30 to Q34)
+
+```{r}
+#| label: rel-cu
+
+cu_items <- efcu |> select(q30:q34) |> mutate(across(everything(), as.numeric))
+alpha_cu <- psych::alpha(cu_items)
+alpha_cu$total |> select(raw_alpha, std.alpha, average_r) |> round(3)
+alpha_cu$alpha.drop |> select(raw_alpha) |> round(3)
+```
+
+```{r}
+#| label: efa-cu
+
+fa_cu <- fa(cu_items, nfactors = 1, fm = "pa")
+print(fa_cu$loadings, cutoff = 0)
+```
+
+## Awareness of Services (Q13r to Q26r)
+
+```{r}
+#| label: rel-aware
+
+aware_items <- efcu |> select(q13r:q26r) |> mutate(across(everything(), as.numeric))
+alpha_aware <- psych::alpha(aware_items, check.keys = FALSE)
+alpha_aware$total |> select(raw_alpha, std.alpha, average_r) |> round(3)
+alpha_aware$alpha.drop |> select(raw_alpha) |> round(3)
+```
+
+```{r}
+#| label: efa-aware
+
+fa_aware <- fa(aware_items, nfactors = 1, fm = "pa")
+print(fa_aware$loadings, cutoff = 0)
+```
+
+## Reliability Summary
+
+```{r}
+#| label: rel-summary
+
+tibble(
+  construct = c("att_employee", "att_cu", "awareness"),
+  items     = c("Q3 to Q6", "Q30 to Q34", "Q13r to Q26r"),
+  n_items   = c(4, 5, 14),
+  alpha     = c(alpha_emp$total$raw_alpha, alpha_cu$total$raw_alpha,
+                alpha_aware$total$raw_alpha)
+) |>
+  mutate(alpha = round(alpha, 3),
+         acceptable = if_else(alpha >= 0.70, "Yes", "Below 0.70"))
+```
+
+**Interpretation.** Attitude toward employees (alpha = `r sprintf("%.2f", alpha_emp$total$raw_alpha)`) and awareness of services (alpha = `r sprintf("%.2f", alpha_aware$total$raw_alpha)`) both pass the 0.70 standard, and their items load together on a single factor (most loadings near or above 0.40), so they can be combined into composite indexes. No awareness item would raise alpha if dropped.
+
+Attitude toward CU operations (alpha = `r sprintf("%.2f", alpha_cu$total$raw_alpha)`) does **not** meet the standard. Dropping any single item does not fix it, and only Q32 (prompt loan processing) loads strongly on the factor. That makes sense from the questionnaire: Q30 to Q34 ask about different things (loan rates, confidentiality, speed, meeting needs, and simple applications), so they do not measure one underlying attitude. I still build `att_cu` to show the process, but it should be used with caution, and in later analysis these five items are better analyzed **one at a time**.
+
+# Composite Indexes
+
+Each composite is the **row mean** of its items. `rowMeans(..., na.rm = TRUE)` keeps a respondent who skipped one item instead of dropping them.
+
+```{r}
+#| label: composites
+
+efcu <- efcu |>
+  mutate(
+    att_employee = rowMeans(across(q3:q6,     as.numeric), na.rm = TRUE),
+    att_cu       = rowMeans(across(q30:q34,   as.numeric), na.rm = TRUE),
+    awareness    = rowMeans(across(q13r:q26r, as.numeric), na.rm = TRUE)
+  ) |>
+  set_variable_labels(
+    att_employee = "Attitude toward CU employees (mean of Q3 to Q6; 1 to 5)",
+    att_cu       = "Attitude toward CU operations (mean of Q30 to Q34; 1 to 5)",
+    awareness    = "Awareness of CU services (mean of Q13r to Q26r; 1 to 3)"
+  )
+
+efcu |>
+  select(att_employee, att_cu, awareness) |>
+  describe() |>
+  select(n, mean, sd, min, max) |>
+  round(2)
+```
+
+```{r}
+#| label: composite-check
+
+# My att_employee matches the composite that came with the raw file
+all.equal(as.numeric(efcu$att_employee), as.numeric(raw$employeeperformance))
+```
+
+The rebuilt `att_employee` index matches the unlabeled composite that came with the raw file exactly, which confirms that column was the mean of Q3 to Q6.
+
+```{r}
+#| label: fig-composites
+#| fig-cap: "Distribution of the three composite indexes"
+#| fig-height: 3.4
+
+efcu |>
+  select(att_employee, att_cu, awareness) |>
+  pivot_longer(everything(), names_to = "index", values_to = "score") |>
+  ggplot(aes(score)) +
+  geom_histogram(binwidth = 0.25, fill = "#8A4B5E", color = "white") +
+  facet_wrap(~ index, scales = "free_x") +
+  labs(x = "Composite score", y = "Respondents") +
+  theme_minimal(base_size = 12) +
+  theme(strip.text = element_text(face = "bold", color = "#6B2737"))
+```
+
+# Nominal Variables as Factors
+
+Yes/no questions are nominal, so they become factors with their labels as the categories.
+
+```{r}
+#| label: factors
+
+efcu <- efcu |>
+  mutate(across(c(q11, q12, q27, q38), as_factor, .names = "{.col}_f"))
+
+efcu |> count(q38_f)
+```
+
+# Save the Cleaned Data
+
+```{r}
+#| label: save
+
+write_sav(efcu, "data/case31_efcu_clean.sav")   # keeps labels for SPSS users
+write_rds(efcu, "data/case31_efcu_clean.rds")   # keeps labels for R
+
+dim(efcu)
+```
+
+The cleaned data set has **`r nrow(efcu)` respondents** and **`r ncol(efcu)` variables**: the original items, an ID, the reversed `r`-suffix items, three composite indexes, and factor versions of the yes/no questions.
+
+## Data Dictionary (After Cleaning)
+
+```{r}
+#| label: dict-after
+
+look_for(efcu) |>
+  convert_list_columns_to_character() |>
+  select(pos, variable, label, value_labels)
+```
+
+# Reflection {.unnumbered}
+
+Preparing this data showed me why the M08 procedure matters before any analysis. The raw file looked ready, but it had a wrong variable label on Q8, a "no answer" code hiding inside Q12 that would have been averaged as a real answer, and several items coded so that 1 meant "very high." Reverse coding those items and checking each recode with a cross-tab means that later results read the intuitive way: higher numbers mean more. Running reliability and factor analysis before building the composites also gave me evidence that each set of items measures one idea, instead of just assuming it.
+
+# Appendix: Links {.unnumbered}
+
+- [This report on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/IC10-2-1-Data-Preparation-Case31/case31-data-preparation.html)
+- [Source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/IC10-2-1-Data-Preparation-Case31)
