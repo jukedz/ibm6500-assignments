@@ -1,0 +1,112 @@
+---
+title: "Data Analysis Table: Research Questions"
+subtitle: "IC10-2-2 | Case 31: Employees Federal Credit Union"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    embed-resources: true
+    link-external-newwindow: true
+editor: visual
+---
+
+# Overview {.unnumbered}
+
+A data analysis table is the **blueprint for data analysis**. For each research question (RQ) or hypothesis (H), it lists the constructs and their roles, how each construct is measured (operationalization), the scale of measurement, and the statistical test that fits. Each test was chosen with the Chapter 15 data analysis decision tree (Slide 23), which asks three questions:
+
+1.  Is the data **non-parametric** (nominal or ordinal) or **parametric** (interval or ratio)?
+2.  How many **samples or groups** are involved?
+3.  Are the groups **independent** (different people) or **paired** (the same people answering two questions)?
+
+# Research Questions and Hypotheses
+
+| ID | Research question or hypothesis |
+|-------------------|-----------------------------------------------------|
+| R1 | Why do people join the Credit Union? |
+| R2 | Why do members use other financial institutions when they need to borrow funds? |
+| R3 | What are the members' attitudes and beliefs about the proficiencies of credit union employees? |
+| R4 | Are there any perceived differences on (a) attitude towards employee proficiencies, (b) awareness of services, and (c) operational effectiveness between members who live in the area of the firm's headquarters and members who live elsewhere? |
+| R5 | How well are the members aware of the services offered by the credit union? |
+| R6 | What are the members' attitudes and beliefs about how effectively the credit union is operated? |
+| H1 | Members' awareness of the regular share accounts will influence their opinions on how well the current financial services provided by the credit union meet their needs. |
+| H2 | Members will not be different in their opinion on CU's loan rate (Q8r) and the degree to which they agree that CU's loan rate is lower than competitors (Q30). |
+
+: Case 31 research questions and hypotheses
+
+# Data Analysis Table
+
+| Hypothesis / RQ | Constructs & Their Role | Operationalization of the Constructs | Scale | Statistical Test |
+|---------------|---------------|---------------|---------------|---------------|
+| **R1** | Reasons to join the Credit Union (descriptive) | Q7 | Interval | Descriptive statistics, followed by one group t-test |
+| **R2** | Reasons for borrowing from other financial institutions (descriptive) | Q28 (borrowed elsewhere, yes/no)<br>Q29 (reasons, check all that apply; each option coded as a separate 1/0 variable) | Nominal<br>Nominal | Descriptive statistics (frequencies and percentages), followed by chi-square goodness-of-fit test |
+| **R3** | Attitudes towards employee proficiencies | Q3 - Q6 | Interval | DS and reliability/factor analysis followed by one group t-test |
+| **R4a** | Member residence (I.V.)<br>Attitudes towards employee proficiencies (D.V.) | Q38<br>Att_Employee | Nominal (1=yes, 2=no)<br>Interval | Descriptive statistics followed by independent groups t-test |
+| **R4b** | Member residence (I.V.)<br>Awareness of services (D.V.) | Q38<br>Q13r - Q26r | Nominal (1=yes, 2=no)<br>Ordinal | Two-way cross-tabulation followed by chi-square |
+| **R4c** | Member residence (I.V.)<br>Attitude toward operational effectiveness (D.V.) | Q38<br>Q9r - Q10r, Q31 - Q34, Q37r<br>Q11 - Q12rc | Nominal (1=yes, 2=no)<br>Interval scale<br>Nominal scale | Descriptive statistics followed by the following, respectively:<br>Independent groups t-test<br>Chi-square independence test |
+| **R5** | Awareness of services (descriptive) | Q13r - Q26r | Ordinal | Descriptive statistics (frequencies, percentages, and medians) and reliability analysis, followed by chi-square goodness-of-fit test |
+| **R6** | Attitude toward operational effectiveness (descriptive) | Q9r - Q10r, Q31 - Q34, Q37r<br>Q11 - Q12rc | Interval<br>Nominal | Descriptive statistics followed by the following, respectively:<br>One group t-test<br>Chi-square goodness-of-fit test |
+| **H1** | Members' awareness of the regular share account (I.V.)<br>The degree to which the current financial services meet the needs of the members (D.V.) | Q13r<br>Q33 | Ordinal<br>Interval | Descriptive statistics followed by one-way ANOVA |
+| **H2** | Member opinion on CU's rate charge (test variable 1, paired)<br>Member agreement that CU's loan rates are lower than competitors (test variable 2, paired) | Q8r<br>Q30 | Interval<br>Interval | Paired samples t-test |
+
+: Data analysis table for Case 31 (completed)
+
+# Rationale for the Tests I Selected
+
+## R2: Reasons for borrowing elsewhere
+
+R2 is answered by Q28 ("During the past year, have you borrowed money from a bank or other lending source other than the Credit Union?") and Q29 ("Why did you go to a source other than the Credit Union?"). Q29 is a check-all-that-apply question, so each option (loan not approved, CU did not offer the credit, better rates elsewhere, established credit line elsewhere, prefer a local institution, other) becomes its own **yes/no (1/0) variable**. These are nominal, one sample, so the decision tree points to **frequencies and percentages** followed by a **chi-square goodness-of-fit test** to see whether some reasons are chosen more often than others.
+
+::: callout-warning
+## Data limitation
+
+Q28 and Q29 are **not included** in the Case 31 data file (the file goes from Q27 to Q30). R2 can be planned in the data analysis table, but it cannot be tested with the data provided. Related questions that *are* available (Q8r on loan rates, Q30 on whether CU loan rates are lower, and Q34 on simple loan applications) can only suggest possible reasons indirectly.
+:::
+
+## R5: Awareness of services
+
+Q13r to Q26r use three ordered categories (1 = unaware of service, 2 = aware but have not used, 3 = aware and have used), so they are **ordinal**. R5 is descriptive and involves **one sample** of members. For ordinal, one-sample data, the decision tree points to **descriptive statistics** (frequencies, percentages, and medians for each service) and a **chi-square goodness-of-fit test** to check whether members are spread evenly across the three awareness levels. Because the 14 items also form the awareness index used in R4b, I include a **reliability analysis** (Cronbach's alpha) before combining them.
+
+## R6: Operational effectiveness
+
+R6 uses the same items as R4c, but describes **all members as one group** instead of comparing two groups. The interval items (Q9r, Q10r, Q31 to Q34, and Q37r) get **descriptive statistics** followed by a **one group t-test** against the scale midpoint (for example, 3 = "uncertain" on Q31 to Q34) to see whether members lean positive or negative. The yes/no items (Q11 and Q12rc) are nominal, so they get **frequencies** and a **chi-square goodness-of-fit test** to see whether "yes" is chosen more often than "no."
+
+## H1: Awareness of the regular share account and meeting members' needs
+
+In H1, awareness of the regular share account (Q13r) is expected to **influence** opinions about whether CU services meet members' needs (Q33), so Q13r is the **independent variable** and Q33 is the **dependent variable**. Q13r is a categorical variable with **three groups** (unaware, aware but not used, aware and used), and Q33 is measured on a 5-point agreement scale, which is **interval**. A metric dependent variable with one categorical independent variable that has three or more groups calls for a **one-way ANOVA**. A t-test would not work because it only compares two groups.
+
+## H2: Opinion on loan rates vs. agreement that loan rates are lower
+
+Both Q8r and Q30 are answered by the **same members**, so the two measures are **paired**, not independent. Both are 5-point rating scales treated as **interval**. Two related, interval measures from one group call for a **paired samples t-test**, which tests whether the average difference between each member's two answers is zero (no difference, as H2 states).
+
+::: callout-note
+## Check the direction before running H2
+
+After reverse coding, a higher Q8r means members think the CU's loan rates are **higher**, while a higher Q30 means members **agree that the rates are lower**. The two questions point in opposite directions, so one of them should be reverse coded again (or the result interpreted with this in mind) before the paired t-test is run.
+:::
+
+# Summary of the Decision Tree Logic
+
+| Situation | Scale of D.V. | Groups | Test |
+|-----------------------|----------------|----------------|-------------------|
+| Describe one group, categorical data (R2, R5, R6 nominal items) | Nominal/ordinal | One sample | Chi-square goodness-of-fit |
+| Describe one group, metric data (R1, R3, R6 interval items) | Interval | One sample | One group t-test |
+| Compare two independent groups, categorical data (R4b, R4c nominal) | Nominal/ordinal | Two independent | Cross-tab and chi-square independence test |
+| Compare two independent groups, metric data (R4a, R4c interval) | Interval | Two independent | Independent groups t-test |
+| Compare three or more groups, metric data (H1) | Interval | Three independent | One-way ANOVA |
+| Compare two measures from the same people (H2) | Interval | Paired | Paired samples t-test |
+
+: How each test in the table follows the Chapter 15 decision tree
+
+# Appendix: Links {.unnumbered}
+
+- [This report on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/IC10-2-2-Data-Analysis-Table-Case31/case31-data-analysis-table.html)
+- [Source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/IC10-2-2-Data-Analysis-Table-Case31)
