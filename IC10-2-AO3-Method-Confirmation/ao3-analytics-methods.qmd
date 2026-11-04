@@ -1,0 +1,106 @@
+---
+title: "Analytics Methods to Employ: AO3"
+subtitle: "CPP Farm Store CEP | Team 5 | IC10-2 Analytics Objective and Method Confirmation"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-location: left
+    toc-title: "Contents"
+    embed-resources: true
+    link-external-newwindow: true
+bibliography: references.bib
+csl: american-marketing-association.csl
+editor: visual
+---
+
+::: callout-note
+## How to use this file
+
+The section below is written to drop into **Chapter 3** of the CEP report under the team's "Analytics Methods to Employ" heading. The `###` heading for AO3 matches the GP06 format, so it can be copied into the group `.qmd` as is.
+:::
+
+## Analytics Methods to Employ
+
+### AO3: Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion
+
+**Project objective supported.** AO3 supports PO3, *Optimize the Farm Store's websites (cpp.com and the online store) by planning SEO strategies and implementing them.* Before the Farm Store spends money on Google Shopping Ads, it needs to know how visitors from each traffic channel move toward a purchase and where they drop off. AO3 answers that question with the store's own GA4 data, so the recommendation to invest in paid search, improve organic search (SEO), or do both is based on evidence instead of assumption.
+
+#### Data source and unit of analysis
+
+The primary data source is the CPP Farm Store's **Google Analytics 4 (GA4) event data**, exported to BigQuery and queried with SQL. Each row in the GA4 export is one event (for example, a page view or a purchase), so I will aggregate events to the **user level** (`user_pseudo_id`) and, where needed, the **session level** (`user_pseudo_id` plus `ga_session_id`). Until access to the Farm Store's GA4 property is granted, I am building and testing the full workflow on Google's public GA4 sample e-commerce dataset (`bigquery-public-data.ga4_obfuscated_sample_ecommerce`, November 2020 to January 2021). It has the same schema as the Farm Store's future export, so the same SQL and R code will run on the real data once it is connected.
+
+#### Method 1: Descriptive conversion funnel analysis by channel
+
+**What it is.** A conversion funnel counts how many unique users reach each step of the shopping path: *session start, view item, add to cart, begin checkout,* and *purchase.* I will calculate the number of users and the step-to-step conversion rate at each stage, broken out by traffic channel (paid search, organic search, direct, referral, and other).
+
+**Why I am using it.** The funnel shows *where* each channel loses shoppers. If paid search visitors view items but abandon at checkout, the problem is the checkout experience, not traffic, and buying more ads would not fix it. This step gives the Farm Store a clear picture before any testing and directly informs the SEO side of PO3 by showing how organic visitors behave compared with paid visitors.
+
+**Variables/features.** `event_name` (funnel steps: `session_start`, `view_item`, `add_to_cart`, `begin_checkout`, `purchase`), `user_pseudo_id`, `traffic_source.medium` and `traffic_source.source` (channel), and `event_date` (time period).
+
+#### Method 2: Chi-square test of independence and two-proportion comparison
+
+**What it is.** A chi-square test of independence checks whether two categorical variables are related. Here, the outcome is whether a user **purchased (yes/no)**, and the grouping variable is **channel (paid search vs. organic search)**. I will pair it with a two-proportion comparison that reports each channel's conversion rate, the difference in percentage points, and a 95% confidence interval for that difference.
+
+**Why I am using it.** Both variables are categorical, so the chi-square test is the appropriate test of whether purchasing depends on how a visitor arrived. The two-proportion comparison adds the *size* of the gap, which matters more to the client than a p-value alone. Prior research supports testing this difference rather than assuming ads work: sponsored search can raise conversion [@ghose2009], but purchase intention from Shopping Ads depends heavily on trust and perceived value, not exposure alone [@duffett2025]. In the GA4 sample data, paid search converted at 0.98% compared with 1.18% for organic search (chi-square = 4.55, df = 1, p = .033), which shows that paying for clicks does not automatically bring more buyers.
+
+**Variables/features.** `purchased` (binary, created from whether the user has any `purchase` event) and `channel` (recoded from `traffic_source.medium`: `cpc` = paid search, `organic` = organic search). Users with `(data deleted)` or unclassified mediums are excluded from this comparison.
+
+#### Method 3: Logistic regression predicting purchase
+
+**What it is.** Binary logistic regression models the probability that a user makes a purchase based on several predictors at once, and reports each predictor's effect as an odds ratio.
+
+**Why I am using it.** The chi-square test compares channels one at a time but cannot rule out other explanations. For example, paid search visitors might be more likely to use mobile devices, which convert differently. Logistic regression estimates the effect of channel **while controlling for** device, visitor type, and engagement, so the Farm Store can see whether paid search has its own effect on purchasing. This moves AO3 from describing what happened to explaining it.
+
+**Variables/features.**
+
+| Role | Variable | GA4 source field | Type |
+|------------------|------------------|--------------------|------------------|
+| Outcome | Purchased (1 = yes, 0 = no) | `event_name = 'purchase'` | Binary |
+| Predictor of interest | Channel (paid, organic, direct, referral) | `traffic_source.medium` | Categorical |
+| Control | Device category (desktop, mobile, tablet) | `device.category` | Categorical |
+| Control | New vs. returning visitor | `first_visit` event / session number | Binary |
+| Control | Engagement time (minutes) | `engagement_time_msec` | Continuous |
+| Control | Pages viewed per user | count of `page_view` events | Count |
+| Control | Region | `geo.region` | Categorical |
+
+: Variables for the AO3 logistic regression
+
+#### Method 4: Pre/post comparison of a Shopping Ads test (if the client runs one)
+
+**What it is.** If the Farm Store agrees to run a short Google Shopping Ads campaign for selected products (for example, gift baskets), I will compare conversion rates and revenue for the same products in a set period **before** and **during** the campaign.
+
+**Why I am using it.** Methods 1 to 3 describe how existing channels perform, but they cannot show what Shopping Ads would add for this specific store. A small, low-cost test gives direct evidence for the final recommendation. Because a pre/post design cannot fully separate the ad effect from seasonality, I will compare against the same period's organic traffic and note this limitation.
+
+**Variables/features.** `event_date` (pre vs. during period), `traffic_source.medium` and `traffic_source.name` (campaign), `items.item_name` and `items.item_category` (promoted products), `ecommerce.purchase_revenue`, and conversion rate per period.
+
+#### Tools and limitations
+
+Data will be extracted with SQL in **BigQuery** and analyzed in **R** (tidyverse for wrangling, `chisq.test()` and `prop.test()` for Method 2, and `glm(family = binomial)` for Method 3), with all work documented in Quarto. The main limitations are: (1) access to the Farm Store's GA4 property is still pending, so results so far come from the sample dataset; (2) GA4 assigns credit to the channel that brought the user, so multi-channel paths are simplified; and (3) if the Farm Store's online traffic is small, the tests may not reach significance, in which case the funnel results will carry more weight in the recommendation.
+
+## Faculty Lead Approval
+
+::: callout-important
+## Complete after meeting with Dr. Jung
+
+Fill in the date and keep these statements only after Dr. Jung has approved them. If he asks for changes, revise the AO or method above first and note the change here.
+:::
+
+**Analytics objective approval.** On \[date\], my faculty lead, Dr. Jae Jung, reviewed and approved my analytics objective, AO3: *Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion*, as appropriate for supporting PO3, *Optimize the Farm Store's websites (cpp.com and the online store) by planning SEO strategies and implementing them.*
+
+**Analytics method approval.** On \[date\], Dr. Jae Jung also approved the analytics methods I will use to address AO3: descriptive conversion funnel analysis by channel, a chi-square test of independence with a two-proportion comparison, logistic regression predicting purchase, and a pre/post comparison if the Farm Store runs a Shopping Ads test, using the GA4 variables described above.
+
+## Task List {.unnumbered}
+
+The group's task list for addressing Dr. Jung's proposal feedback, with the member responsible for each task, is here: [CEP Proposal Revision Task List](https://jukedz.github.io/ibm6500-assignments/IC10-2-AO3-Method-Confirmation/cep-task-list.html).
+
+## References {.unnumbered}
+
+::: {#refs}
+:::

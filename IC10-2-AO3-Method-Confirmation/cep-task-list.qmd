@@ -1,0 +1,109 @@
+---
+title: "CEP Proposal Revision Task List"
+subtitle: "Group 5 | CPP Farm Store | Based on Faculty Lead Feedback (Dr. Jae Jung)"
+author: "Cecilia Espina, Danielle Meza, Julieta Diaz, and Jungmin Woo"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-location: left
+    toc-title: "Contents"
+    embed-resources: true
+    link-external-newwindow: true
+editor: visual
+---
+
+# Overview {.unnumbered}
+
+This task list plans how Group 5 will address the deficiencies in our CEP proposal (Chapters 1 to 3), based on Dr. Jung's Proposal Evaluation Form. Dr. Jung noted that these are the main deficiencies and that more comments may come in future readings, so this list will be updated as new feedback arrives.
+
+## Feedback Scores
+
+| Section | Score | Priority |
+|----------------------------------------|----------------|----------------|
+| 1\. Background and Business Problems (Ch1) | 100% | Maintain |
+| 2\. Project Objectives vs. Analytics Objectives (Ch1) | 93% | Medium |
+| 3\. Business Background (Ch2) | **87%** | **High (lowest score)** |
+| 4\. Literature Review (Ch2) | 94% | Medium |
+| 5\. Methods (Ch3) | 92% | High |
+| 6\. Overall Evaluation for the Project | 90% |  |
+| Overall Evaluation Score for Students | 90% |  |
+
+: Faculty lead evaluation scores
+
+## Analytics Objective Owners
+
+| AO | Project Objective supported | Owner |
+|-----------------|--------------------------------------|-----------------|
+| AO1 | PO1: Storefront and Clover integration | Danielle Meza |
+| AO2 | PO2: Sales and inventory dashboards | Jungmin Woo |
+| AO3 | PO3: Website optimization (SEO strategies for cpp.com and the online store) | Julieta Diaz |
+| AO4 | PO4: Digital loyalty program | Cecilia Espina |
+
+: Each member is responsible for one analytics objective
+
+# Task List
+
+Status key: **Not started**, **In progress**, **Done**. "Each AO owner" means every member completes the task for their own AO.
+
+## Chapter 1: Project Objectives vs. Analytics Objectives (93%)
+
+| \# | Task | Responsible | Target | Status |
+|-------------|----------------------|-------------|-------------|-------------|
+| 1.1 | Add a PO-to-AO crosswalk table to Ch1 showing which AO supports which PO, the AO owner, and the data source for each AO. | Julieta Diaz (compile); each AO owner (input) | Week 11 | Not started |
+| 1.2 | State the data source for each AO clearly in its AO statement (for example, GA4 for AO3, Clover daily sales reports for AO1 and AO2). | Each AO owner | Week 11 | Not started |
+| 1.3 | Explain how PO5 (shared digital marketing campaign) will be achieved without its own AO, using the insights from AO1 to AO4. | Cecilia Espina | Week 12 | Not started |
+| 1.4 | Check that each AO is worded to lead to a specific, actionable recommendation for its PO. | Each AO owner | Week 12 | Not started |
+
+## Chapter 2: Business Background (87%, lowest score)
+
+| \# | Task | Responsible | Target | Status |
+|-------------|----------------------|-------------|-------------|-------------|
+| 2.1 | Expand the company background: Farm Store history, products, operations, and its role at Cal Poly Pomona. | Danielle Meza | Week 12 | Not started |
+| 2.2 | Add a macro environment analysis (PESTEL) relevant to a campus farm store. | Jungmin Woo | Week 12 | Not started |
+| 2.3 | Add an industry analysis (specialty and farm retail, competitors, online grocery and gift trends). | Cecilia Espina | Week 12 | Not started |
+| 2.4 | Add a customer analysis (students, faculty and staff, local community, online shoppers). | Julieta Diaz | Week 12 | Not started |
+| 2.5 | Add a SWOT analysis that leads into the business problems. | All members (group meeting) | Week 12 | Not started |
+| 2.6 | Add a sentence or two linking each background section to the POs and AOs it supports. | Each AO owner | Week 13 | Not started |
+
+## Chapter 2: Literature Review (94%)
+
+| \# | Task | Responsible | Target | Status |
+|-------------|----------------------|-------------|-------------|-------------|
+| 3.1 | Make sure each AO has specific research questions or hypotheses, each introduced by the literature paragraph before it. | Each AO owner | Week 12 | Not started |
+| 3.2 | Add articles where an AO has thin support, using reputable peer-reviewed sources. | Each AO owner | Week 12 | Not started |
+| 3.3 | Check every in-text citation and reference entry against American Marketing Association (AMA) style, and make sure every in-text citation appears in the references and vice versa. | Jungmin Woo | Week 13 | Not started |
+
+## Chapter 3: Methods (92%)
+
+| \# | Task | Responsible | Target | Status |
+|-------------|----------------------|-------------|-------------|-------------|
+| 4.1 | Reorganize Ch3 by data type (survey data, Clover sales data, GA4 data) so each data source has its own section. | Danielle Meza | Week 12 | Not started |
+| 4.2 | Describe the population and sampling plan for the customer survey. | Cecilia Espina | Week 12 | Not started |
+| 4.3 | Write "Analytics Methods to Employ" (GP06, 3 to 5 pages): for each AO, the method, the variables/features, and the justification, under a third-level heading. | Each AO owner | Week 11 | AO3 draft done (Julieta) |
+| 4.4 | Bring business information from Ch2 into the methods rationale where it applies. | Each AO owner | Week 13 | Not started |
+| 4.5 | Check that the survey instrument includes every construct needed for the AOs that rely on survey data. | Cecilia Espina | Week 12 | Not started |
+| 4.6 | Verify GA4 metric integrity (tracking setup, purchase events, data deleted rows) and follow up on access to the Farm Store's GA4 property. | Julieta Diaz | Week 13 | In progress |
+| 4.7 | Verify the adequacy and consistency of the Clover daily sales reports sent to Dr. Jung (fields, date range, missing days). | Jungmin Woo | Week 13 | Not started |
+| 4.8 | Add a data collection timeline that shows all data will be collected by Week 15. | Danielle Meza | Week 12 | Not started |
+
+## Overall Report (90%)
+
+| \# | Task | Responsible | Target | Status |
+|-------------|----------------------|-------------|-------------|-------------|
+| 5.1 | Check headings, figures, tables, and cross-references against the CEP content and format template. | Julieta Diaz | Week 13 | Not started |
+| 5.2 | Proofread the full report for consistency in terms (PO, AO, client name) and writing quality. | All members | Week 14 | Not started |
+| 5.3 | Meet with Dr. Jung to get approval of each AO and its analytics method (IC10-2). | Each AO owner | Week 11 | Not started |
+| 5.4 | Update this task list as new comments come in from Dr. Jung. | Julieta Diaz | Ongoing | In progress |
+
+# Appendix: Links {.unnumbered}
+
+- [This task list on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/IC10-2-AO3-Method-Confirmation/cep-task-list.html)
+- [AO3 analytics methods and approval statements](https://jukedz.github.io/ibm6500-assignments/IC10-2-AO3-Method-Confirmation/ao3-analytics-methods.html)
+- [Source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/IC10-2-AO3-Method-Confirmation)
+- [CEP content and format template](https://www.cppmsdm.com/cep-content-format-template#sec-ch1-introduction)
