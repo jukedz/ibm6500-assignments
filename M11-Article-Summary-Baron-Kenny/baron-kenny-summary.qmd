@@ -1,0 +1,337 @@
+---
+title: "Moderators vs. Mediators: Baron and Kenny (1986)"
+subtitle: "M11 Article Reading and Summary | Study notes for future reference"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    embed-resources: true
+    code-fold: true
+    code-summary: "Show the code"
+    code-copy: true
+    df-print: kable
+    link-external-newwindow: true
+bibliography: references.bib
+csl: american-marketing-association.csl
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Article at a Glance {.unnumbered}
+
+::: {.callout-note appearance="simple"}
+## Citation (AMA style)
+
+Baron, Reuben M. and David A. Kenny (1986), "The Moderator-Mediator Variable Distinction in Social Psychological Research: Conceptual, Strategic, and Statistical Considerations," *Journal of Personality and Social Psychology*, 51 (6), 1173-82. <https://doi.org/10.1037/0022-3514.51.6.1173>
+:::
+
+|  |  |
+|--------------------|----------------------------------------------------|
+| **Field** | Social psychology (now one of the most cited methods papers in marketing and management research) |
+| **Type** | Conceptual and methodological article; no new data |
+| **Main goal** | Stop researchers from using "moderator" and "mediator" interchangeably, and give a statistical procedure for testing each one |
+| **Three levels of the argument** | Conceptual, strategic, and statistical |
+| **Big contribution** | The famous **three-regression test of mediation**, the four cases for **testing moderation**, and a model that combines both |
+
+: Article summary
+
+::: callout-tip
+## The one-sentence version
+
+A **moderator** tells you **when** (or for whom) X affects Y; a **mediator** tells you **how** or **why** X affects Y [@baron1986, p. 1176].
+:::
+
+# Why the Article Was Written
+
+Baron and Kenny noticed that researchers were mixing up the two terms. For example, one study described identifiability as something that "moderates social loafing" and then, in the same paragraph, called it "an important mediator" of social loafing. Another study meant to describe gender, age, race, and socioeconomic level as moderators but labeled them mediators.
+
+The authors argue the mix-up is more than a vocabulary problem. Each concept implies a **different theory, research design, set of measures, and statistical test**, so confusing them leads to the wrong analysis and missed insights. They also stress that the distinction is **not** the same as experimental vs. measured variables, situational vs. person variables, or manipulations vs. self-reports: a moderator can be either, and a mediator is not limited to verbal reports or to individuals.
+
+# Key Definitions
+
+|   | Moderator | Mediator |
+|------------------|---------------------------|---------------------------|
+| **Definition** | A qualitative (e.g., sex, race, class) or quantitative (e.g., level of reward) variable that affects the **direction and/or strength** of the relation between X and Y | A variable that **accounts for** the relation between X and Y; the **generative mechanism** through which X influences Y |
+| **Question answered** | *When* or *for whom* does the effect hold? | *How* or *why* does the effect occur? |
+| **Causal role** | Always an **independent** variable, at the same level as X | Shifts roles: an **effect** of X and a **cause** of Y |
+| **Statistical signature** | A significant **interaction** (X × Z) | A significant **indirect path** (X → M → Y) that reduces the direct effect of X on Y |
+| **Ideal relation to X** | **Uncorrelated** with X and Y, for a clean interaction | **Strongly correlated** with X (X causes M) |
+| **When to look for one** | When the X-Y relation is **weak or inconsistent** across settings or groups | When the X-Y relation is **strong** and you want to explain it |
+| **Article's examples** | Controllability of noise; gender in intention-behavior; self-monitoring for traits | Perceived control; dissonance arousal; behavioral intention in the theory of reasoned action |
+
+: Moderator vs. mediator
+
+# Moderators
+
+## The Moderator Model
+
+```{mermaid}
+%%| label: fig-mod
+%%| fig-cap: "Moderator model (adapted from Baron and Kenny's Figure 1)"
+flowchart LR
+  X["Predictor (X)"] -- "Path a" --> Y["Outcome (Y)"]
+  Z["Moderator (Z)"] -- "Path b" --> Y
+  XZ["Predictor × Moderator (XZ)"] -- "Path c" --> Y
+  style XZ fill:#F3D9DC,stroke:#6B2737
+```
+
+- The **moderator hypothesis is supported if Path c (the interaction) is significant.** Paths a and b (main effects) may also be significant, but they are not what tests moderation.
+- Example in the article: noise **intensity** hurt task performance only when the noise was **unpredictable (aperiodic)**. Controllability moderates the effect of the stressor [Glass and Singer, as described in @baron1986].
+- A moderator can **weaken**, **eliminate**, or **reverse** (crossover) the X-Y relation. The authors note that going from a strong effect to **no effect** can be more conceptually impressive than a crossover, even though crossovers are stronger statistically.
+
+## Four Cases for Testing Moderation
+
+How you test moderation depends on whether X and the moderator are categorical or continuous (the authors treat categorical variables as dichotomies):
+
+| Case | Moderator (Z) | Independent variable (X) | How to test |
+|--------------|--------------|--------------|--------------------------------|
+| **1** | Categorical | Categorical | **2 × 2 ANOVA**; moderation = significant interaction. Test simple effects only if the interaction is significant. |
+| **2** | Categorical | Continuous | Compare **unstandardized regression slopes** of Y on X across moderator groups (not correlations). Test the slope difference first. |
+| **3** | Continuous | Categorical | Must specify the form in advance. **Linear:** regress Y on X, Z, and **XZ**. **Quadratic:** add Z² and XZ², test XZ². **Step:** dichotomize Z at the step and use Case 1. |
+| **4** | Continuous | Continuous | **Linear/quadratic:** product-term regression (as in Case 3). **Step:** dichotomize Z and use Case 2. Measurement error makes this case hardest. |
+
+: How to test moderation
+
+::: callout-important
+## Why slopes and not correlations (Case 2)
+
+Comparing correlations across groups is flawed: correlations shrink when one group has **less variance** in X (restriction of range) or **more measurement error** in Y. **Unstandardized regression coefficients** are not affected by either, so they are the right measure of the effect in each group.
+:::
+
+**Measurement error** is the recurring warning. Error in X or Z lowers the power to detect an interaction; the authors point to latent-variable methods (LISREL multiple-group models, and Kenny and Judd's method for latent interactions) as remedies.
+
+# Mediators
+
+## The Mediator Model
+
+```{mermaid}
+%%| label: fig-med
+%%| fig-cap: "Mediator model (adapted from Baron and Kenny's Figure 3)"
+flowchart LR
+  X["Independent variable (X)"] -- "Path a" --> M["Mediator (M)"]
+  M -- "Path b" --> Y["Outcome (Y)"]
+  X -- "Path c (direct effect)" --> Y
+  style M fill:#F3D9DC,stroke:#6B2737
+```
+
+The idea goes back to Woodworth's **S-O-R** model: an active organism (O) transforms the stimulus (S) before a response (R) occurs. Mediators "explain how external physical events take on internal psychological significance" [@baron1986, p. 1176], although they can also be group-level constructs such as norms, cohesiveness, or groupthink.
+
+## The Three Conditions for Mediation
+
+A variable functions as a mediator when:
+
+1.  X significantly predicts the mediator (**Path a**).[^1]
+2.  The mediator significantly predicts Y (**Path b**).
+3.  When Paths a and b are controlled, the previously significant X-Y relation **shrinks**, with the strongest evidence when the direct path (**Path c**) drops to **zero**.
+
+[^1]: The printed article labels this "Path c," which appears to be a typo; in Figure 3, the X → M path is Path a.
+
+**Full vs. partial mediation.** If Path c becomes zero, there is evidence for a single, dominant mediator. If Path c shrinks but stays above zero, other mediators are probably at work. Because most behavior has multiple causes, the authors say a realistic goal is a mediator that **significantly reduces** Path c, not one that eliminates it.
+
+## The Three Regression Equations
+
+| Equation | Regression | Must show |
+|-----------------|----------------------------|----------------------------|
+| 1 | M on X | X affects M |
+| 2 | Y on X | X affects Y |
+| 3 | Y on X **and** M | M affects Y, and X's effect is **smaller** than in Equation 2 (zero = perfect mediation) |
+
+: The Baron and Kenny steps
+
+They note there is no need for hierarchical or stepwise regression or partial correlations: just estimate the three equations and test each coefficient.
+
+## The Sobel Test for the Indirect Effect
+
+The **indirect effect** is the product $ab$. Its standard error, given multivariate normality, is:
+
+$$s_{ab} = \sqrt{b^2 s_a^2 + a^2 s_b^2 + s_a^2 s_b^2}$$
+
+Sobel's [-@sobel1982] approximation drops the last term ($s_a^2 s_b^2$), which is usually small. Dividing $ab$ by its standard error gives a *z* test of whether the indirect effect differs from zero.
+
+## Cautions When Testing Mediation
+
+::: incremental
+- **Multicollinearity:** because X causes M, they are correlated, which reduces power in Equation 3. Look at the **size** of coefficients, not only their significance.
+- **Measurement error in the mediator:** mediators are often internal, self-reported states measured with error. Error **underestimates** the mediator's effect and **overestimates** the direct effect of X, so real mediators can be missed. Remedy: **multiple indicators** and latent-variable **structural equation modeling** (SEM).
+- **Feedback (reverse causation):** regression assumes Y does not cause M. Smith's (1982) remedy manipulates one variable that affects only M and another that affects only Y, estimated with two-stage least squares or SEM.
+:::
+
+# Strategic and Operational Differences
+
+## When to Use Each
+
+- **Moderators** are usually introduced when an X-Y relation is **unexpectedly weak or inconsistent** (it holds in one setting or group but not another). Self-monitoring, for instance, improved how well personality traits predicted behavior.
+- **Mediation** is best studied when there is a **strong** X-Y relation to explain.
+
+## Moving Between the Two
+
+| Direction | Article example | Lesson |
+|------------------|-------------------------|------------------------------|
+| **Moderator → mediator** | If race moderates how well an instructional technique works, the underlying reason might be **evaluative anxiety**, which could be tested as a mediator. | Prefer moderators that hint at a process, not only ones that improve prediction. |
+| **Mediator → moderator** | If **perceived control** mediates the effect of crowding on performance, increasing control (suite-style dorms, quiet hours) becomes an intervention. | Choose mediators that point to practical interventions. |
+
+: Moving from one concept to the other
+
+## Operational Implications
+
+- **Moderator study:** control is usually **manipulated**. Measuring perceived control is only a manipulation check.
+- **Mediator study:** perceived control **must be measured**, because it is the mechanism. Construct validity matters, so the authors recommend **multiple, converging measures**: "when mediation is at issue we need to increase both the quality and the quantity of the data" [@baron1986, p. 1179].
+
+# A Framework for Combining Moderation and Mediation
+
+The article's Figure 4 combines both. Using a stressor study: **S** = stressor (X), **C** = manipulated control, **P** = measured perceived control, **O** = outcome, and products such as **CS** and **PS** are interactions.
+
+| Step | Regression(s) | What it shows |
+|----------------|----------------------------|----------------------------|
+| **1** | O on C, S, CS (a 2 × 2 ANOVA) | Effects of the manipulations; **CS** indicates **moderation** |
+| **2** | P on C, S, CS; then O on C, S, P, CS | Whether **P mediates** the S → O effect; if the CS effect on O shrinks, P mediates the moderation (**mediated moderation**) |
+| **3** | O on C, S, P, CS, **PS** | If CS shrinks further and PS is significant, **perceived control (P), not the manipulation (C), is the real moderator** |
+
+: Three-step combined analysis
+
+Two related ideas introduced here:
+
+- **Mediated moderation:** a mediator explains *why* an interaction occurs (CS affects O, and P carries that effect).
+- **Moderated mediation:** the strength of a mediated path depends on a moderator (adding a **CP** term), a concept the authors attribute to James and Brett (1984).
+
+# Applications in the Article
+
+| Research area | Confusion identified | Baron and Kenny's correction |
+|------------------|---------------------------|---------------------------|
+| **Personal control and crowding** | Studies claimed control **mediates** crowding effects but only manipulated control and never **measured** perceived control. | Mediation requires an independent measure of perceived control. The evidence better supports control as a **moderator**. |
+| **Intention-behavior (theory of reasoned action)** | Fishbein and Ajzen treated gender, time delay, skill, and resources as mediators. | Behavioral intention is a true mediator, but **gender is a moderator** and should be tested with a Gender × Intention product term. |
+| **Traits/attitudes and behavior** | Self-monitoring was used only as a moderator. | Use the combined model to test self-monitoring as a moderator **and** the process (e.g., attention) that mediates its effect. |
+
+: How the authors apply the distinction
+
+They close the section with a useful contrast: moderators are a **static** classification of *who* does what, while mediators are **dynamic**, describing the states and processes that cause people to act differently.
+
+# Mini Demonstration in R
+
+To make the procedures concrete for future use, the code below applies both tests to **simulated data** (not real data), where X is ad exposure, M is engagement, Z is device, and Y is purchase intent.
+
+```{r}
+#| label: simulate
+
+library(tidyverse)
+library(knitr)
+set.seed(1986)
+
+n <- 400
+sim <- tibble(
+  X = rnorm(n),                          # ad exposure (continuous)
+  Z = rbinom(n, 1, 0.5),                 # moderator: 1 = mobile, 0 = desktop
+  M = 0.6 * X + rnorm(n),                # mediator: engagement, caused by X
+  Y = 0.5 * M + 0.1 * X + 0.4 * X * Z + rnorm(n)  # outcome: purchase intent
+)
+```
+
+## Moderation: Product-Term Regression
+
+```{r}
+#| label: tbl-mod
+#| tbl-cap: "Moderation test: Y regressed on X, Z, and X × Z"
+
+mod <- lm(Y ~ X * Z, data = sim)   # X * Z expands to X + Z + X:Z
+broom::tidy(mod) |> mutate(across(where(is.numeric), ~ round(.x, 3))) |> kable()
+```
+
+The **X:Z** row is Path c in @fig-mod. A significant coefficient means the effect of X on Y depends on Z (here, the effect of ad exposure is stronger on mobile).
+
+## Mediation: The Three Equations and the Sobel Test
+
+```{r}
+#| label: tbl-med
+#| tbl-cap: "Baron and Kenny's three regression equations"
+
+eq1 <- lm(M ~ X, data = sim)        # Equation 1: X -> M (path a)
+eq2 <- lm(Y ~ X, data = sim)        # Equation 2: X -> Y (total effect)
+eq3 <- lm(Y ~ X + M, data = sim)    # Equation 3: X and M -> Y (paths c and b)
+
+coef_row <- function(model, term, label) {
+  s <- summary(model)$coefficients
+  tibble(Equation = label, Term = term,
+         Estimate = s[term, 1], SE = s[term, 2], p = s[term, 4])
+}
+med_tbl <- bind_rows(
+  coef_row(eq1, "X", "1: M ~ X"),
+  coef_row(eq2, "X", "2: Y ~ X"),
+  coef_row(eq3, "X", "3: Y ~ X + M"),
+  coef_row(eq3, "M", "3: Y ~ X + M")
+)
+med_tbl |> mutate(across(where(is.numeric), ~ round(.x, 3))) |> kable()
+```
+
+```{r}
+#| label: sobel
+
+a  <- coef(eq1)["X"]; sa <- summary(eq1)$coefficients["X", 2]
+b  <- coef(eq3)["M"]; sb <- summary(eq3)$coefficients["M", 2]
+se_ab <- sqrt(b^2 * sa^2 + a^2 * sb^2)          # Sobel's approximation
+z <- (a * b) / se_ab
+tibble(`Indirect effect (ab)` = round(unname(a * b), 3),
+       `SE (Sobel)` = round(unname(se_ab), 3),
+       z = round(unname(z), 2),
+       p = ifelse(2 * pnorm(-abs(z)) < .001, "<.001", sprintf("%.3f", 2 * pnorm(-abs(z))))) |>
+  kable()
+```
+
+The effect of X drops from `r round(coef(eq2)["X"], 2)` (Equation 2) to `r round(coef(eq3)["X"], 2)` once M is added (Equation 3), and the indirect effect is significant: **partial mediation** by engagement.
+
+# How the Article Has Been Updated Since 1986
+
+::: callout-warning
+## Read Baron and Kenny with later research in mind
+
+Zhao, Lynch, and Chen [-@zhao2010], writing in the *Journal of Consumer Research*, argue that the Baron and Kenny steps are too strict in places:
+
+- A significant X → Y effect (Equation 2) is **not required** for mediation; the indirect effect *ab* is what matters.
+- Mediation should be judged by **one test of the indirect effect**, ideally a **bootstrap** confidence interval, which is more powerful than the Sobel test.
+- "Full vs. partial" is less useful than describing the type of mediation (for example, complementary vs. competitive).
+
+The conceptual distinction between moderators and mediators from the 1986 article still holds; mainly the statistical procedure for mediation has been updated.
+:::
+
+# Connection to My Own Work
+
+My CEP analytics objective (**AO3**) asks whether Google Shopping Ads would improve traffic-to-purchase conversion for the CPP Farm Store. This article gives me language for the next step of that analysis:
+
+- **Mediator:** in my M08 regression on the GA4 sample, paid search converted less often than organic search, but the gap disappeared once **engagement** was controlled. That pattern suggests engagement may **mediate** the channel → purchase relation. Baron and Kenny's steps (with a bootstrap test of *ab*) would test it formally.
+- **Moderator:** **device** or **new vs. returning visitor** could **moderate** whether paid search works, tested with a Channel × Device product term (Case 1 or Case 2).
+- **Design lesson:** if engagement is the mechanism, I need to **measure it well** (multiple indicators such as engaged time, pages viewed, and sessions), because measurement error in a mediator hides real mediation.
+
+# Key Takeaways for Future Reference
+
+1.  **Moderator = when/for whom; mediator = how/why.** Never use the terms interchangeably.
+2.  **Moderation is an interaction.** Test the X × Z product term with X and Z in the model; compare **unstandardized slopes**, not correlations.
+3.  **Specify the form of moderation** (linear, quadratic, or step) when the moderator is continuous.
+4.  **Mediation is a causal chain** X → M → Y. Estimate the three equations and test the indirect effect *ab*.
+5.  **Measure mediators carefully.** Measurement error hides mediation and inflates the direct effect; multiple indicators and SEM help.
+6.  **Look for moderators when effects are weak or inconsistent; look for mediators when effects are strong.**
+7.  **Both can live in one model** (mediated moderation, moderated mediation).
+8.  **Update the statistics:** today, test the indirect effect with bootstrapping [@zhao2010].
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+# Appendix {.unnumbered}
+
+## Project Links {.unnumbered}
+
+- [GitHub Repository](https://github.com/jukedz/ibm6500-assignments/tree/main/M11-Article-Summary-Baron-Kenny)
+- [GitHub Pages Website](https://jukedz.github.io/ibm6500-assignments/M11-Article-Summary-Baron-Kenny/baron-kenny-summary.html)
+- [Article DOI](https://doi.org/10.1037/0022-3514.51.6.1173)
