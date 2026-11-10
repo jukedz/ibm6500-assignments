@@ -1,0 +1,22 @@
+/* Plain CSS layered after m08.scss */
+
+.reveal .small-note {
+  font-size: 0.65em;
+  color: #7A6E68;
+}
+
+.reveal .fn-pill {
+  display: inline-block;
+  background: #6B2737;
+  color: #FBF7F1;
+  border-radius: 999px;
+  padding: 0.05em 0.6em;
+  font-family: "Inter", Arial, sans-serif;
+  font-size: 0.75em;
+  margin: 0.1em;
+}
+
+/* keep gtsummary tables readable on slides */
+.reveal .gt_table {
+  font-size: 0.8em !important;
+}

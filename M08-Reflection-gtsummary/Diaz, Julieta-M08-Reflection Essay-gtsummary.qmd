@@ -1,0 +1,437 @@
+---
+title: "Summary Tables with gtsummary"
+subtitle: "M08 Reflection Essay | Revealjs Presentation"
+author: "Julieta Diaz"
+institute: "IBM 6500, Cal Poly Pomona"
+date: "`r Sys.Date()`"
+format:
+  revealjs:
+    theme: [serif, m08.scss]
+    width: 1600
+    height: 900
+    logo: images/logo.svg
+    footer: "M08 Reflection | Publishable Summary Tables with {gtsummary}"
+    transition: slide
+    transition-speed: default
+    background-transition: fade
+    incremental: false
+    toc: true
+    toc-depth: 1
+    toc-title: "Agenda"
+    slide-number: true
+    scrollable: true
+    smaller: true
+    code-fold: false
+    code-overflow: wrap
+    number-sections: false
+    number-depth: 5
+    embed-resources: true
+    css: styles.css
+bibliography: references.bib
+csl: american-marketing-association.csl
+editor: visual
+execute:
+  echo: true
+  freeze: auto
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+
+library(tidyverse)
+library(gtsummary)
+library(gt)
+
+theme_gtsummary_compact()
+```
+
+# Overview
+
+## What This Deck Covers
+
+::: columns
+::: {.column width="55%"}
+::: incremental
+-   **Prompt 1:** what {gtsummary} can do, from Dr. Jung's lecture
+-   **Prompt 2:** how it differs from {gt} and {gtExtras}, and three new things from Dr. Sjoberg's talk
+-   **Prompt 3:** a cross-tabulation and chi-square test with my CEP data
+-   **Prompt 4:** a multiple (logistic) regression with my CEP data
+:::
+:::
+
+::: {.column width="45%"}
+::: {.fragment .fade-left}
+**My CEP context**
+
+I am on Team 5 for the **CPP Farm Store** CEP. My analytics objective (**AO3**) asks whether Google Shopping Ads would improve traffic-to-purchase conversion. Until the Farm Store's GA4 property is connected, I use Google's public **GA4 sample e-commerce data** as a stand-in with the same structure.
+:::
+:::
+:::
+
+::: notes
+Open by framing the deck around the four prompts. Stress that prompts 3 and 4 use the GA4 sample as a placeholder for the Farm Store data, which is still pending.
+:::
+
+## Data for Prompts 3 and 4
+
+The GA4 export was aggregated to **one row per user** in BigQuery (November 2020 to January 2021), keeping users who arrived from **paid search (cpc)** or **organic search**.
+
+```{r}
+#| label: load-data
+
+ga4 <- read_csv("data/ga4_users.csv", show_col_types = FALSE) |>
+  mutate(
+    channel   = factor(channel, levels = c("Organic search", "Paid search")),
+    device    = factor(str_to_title(device)),
+    purchased = factor(purchased, levels = c(0, 1), labels = c("No", "Yes")),
+    new_user  = factor(new_user, levels = c(0, 1), labels = c("Returning", "New"))
+  ) |>
+  labelled::set_variable_labels(
+    channel        = "Traffic channel",
+    device         = "Device category",
+    new_user       = "Visitor type",
+    page_views     = "Page views",
+    sessions       = "Sessions",
+    engagement_min = "Engagement time (minutes)",
+    purchased      = "Purchased"
+  )
+
+glimpse(ga4)
+```
+
+::: aside
+Variable labels are set with {labelled}, so every {gtsummary} table below shows readable labels instead of variable names.
+:::
+
+# Prompt 1: The {gtsummary} Package
+
+## Prompt 1
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+In Step 1, you have seen how to create a summary table and modify it for various statistical analyses. Summarize the package's capabilities as explained by the speaker. How may the {gtsummary} benefit you for your school work or career?
+:::
+
+## Capabilities: One Function, the Right Statistics {auto-animate="true"}
+
+{gtsummary} was created by Dr. Daniel Sjoberg to make **reproducible, publication-quality** summary tables [@sjoberg2021]. Dr. Jung showed that its core function, `tbl_summary()`, **reads each variable's type and picks the right statistic automatically**:
+
+::: incremental
+-   **Continuous** variables show the **median (Q1, Q3)** by default; the `statistic` argument switches to **mean (SD)**.
+-   **Categorical** and **dichotomous** variables show **n (%)**.
+-   `add_p()` picks the matching test: a **Wilcoxon rank-sum** test for continuous variables and a **chi-square** (or Fisher's exact) test for categorical ones.
+-   With **labelled survey data**, it uses the variable labels as row names with no extra work.
+:::
+
+::: notes
+Key point from the lecture: add_p() by default still runs a Wilcoxon test even when the table shows means. To test means properly you need add_difference(), which runs a Welch two-sample t-test.
+:::
+
+## Capabilities: Modifying and Testing
+
+::: columns
+::: {.column width="50%"}
+**Testing differences**
+
+-   `add_p()` for p-values, formatted with `pvalue_fun = label_style_pvalue(digits = 2)`
+-   `add_difference()` for a **Welch two-sample t-test** on means, or a test of **proportions**, with 95% confidence intervals
+-   `add_difference(adj.vars = ...)` for an **ANCOVA** table
+-   `add_q()` to adjust p-values for multiple comparisons (Bonferroni)
+-   `tbl_cross()` for a **contingency table** with totals, then `add_p()` for chi-square
+:::
+
+::: {.column width="50%"}
+**Formatting**
+
+-   `add_overall()` and `add_n()` for totals
+-   `modify_header()`, `modify_spanning_header()`, `modify_footnote()`, `modify_caption()`
+-   `bold_labels()` and `bold_p()`
+-   `as_gt()` to finish with {gt} functions such as `tab_header()`
+-   Themes such as `theme_gtsummary_journal("jama")` and `"qjecon"`
+:::
+:::
+
+::: {.fragment .highlight-red}
+He also warned that `fct_drop()` should remove empty factor levels (like *Not applicable* with 0%) and that sparse levels should be removed before a chi-square test, so every expected cell has at least 5.
+:::
+
+## Capabilities: Regression Tables
+
+::: incremental
+-   `tbl_regression()` turns a fitted `lm()` or `glm()` model into a clean table; `exponentiate = TRUE` reports **odds ratios** for logistic models.
+-   `add_global_p()` gives one p-value for a multi-level factor, `add_glance_table()` adds N, AIC, and BIC, and `add_vif()` checks **multicollinearity**.
+-   `tbl_uvregression()` runs a separate simple ("univariate") regression for each predictor in **one call**.
+-   `tbl_merge()` puts tables **side by side** and `tbl_stack()` puts them **on top of each other**, with `tab_spanner` labels.
+:::
+
+## How {gtsummary} Will Help Me
+
+::: columns
+::: {.column width="50%"}
+::: {.fragment .fade-up}
+### School
+
+-   **CEP Chapter 4 (Results):** tables for my AO3 funnel comparisons and regression, formatted the same way every time I re-run them.
+-   **Case 31 assignments:** `tbl_summary()` with `add_p()` replaces the hand-built tables I made for R1 to R6.
+-   Because tables come from code, a change in the data updates the report when I re-render.
+:::
+:::
+
+::: {.column width="50%"}
+::: {.fragment .fade-up}
+### Career
+
+-   I want to grow into a **data-driven marketing** role in the beauty industry. Client reports there need clear, credible tables that a brand manager can read in seconds.
+-   Journal themes and `inline_text()` let me match a client's style and quote statistics in the narrative without copying numbers by hand, which prevents errors.
+:::
+:::
+:::
+
+::: notes
+Personal connection: the same Table 1 structure works for comparing customer segments, campaigns, or channels in marketing research.
+:::
+
+# Prompt 2: Dr. Sjoberg's Presentation
+
+## Prompt 2
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+In Step 2, you watched the extended presentation of the {gtsummary} package by Dr. Daniel Sjoberg, the very creator of the package.
+
+2.1. How does it differ from gt and gtExtras?
+
+2.2. Give three things you learned newly that were not explained in the lecture in Step 1.
+:::
+
+## 2.1 {gt} vs. {gtExtras} vs. {gtsummary}
+
+| Package | What it starts from | What it does | Best for |
+|------------------|------------------|-----------------------|------------------|
+| **{gt}** [@gt] | A data frame of numbers **you already calculated** | A "grammar of tables": headers, spanners, formatting, colors, footnotes | Any display table |
+| **{gtExtras}** [@gtextras] | A {gt} table | Add-ons for {gt}: themes, sparklines, bar charts and color scales **inside cells** | Dashboards and visual tables |
+| **{gtsummary}** [@sjoberg2021] | **Raw data or a fitted model** | **Calculates** the statistics and tests, then builds the table | Table 1, hypothesis tests, regression results |
+
+: How the three packages differ {#tbl-pkgs}
+
+::: insight
+The key difference is **who does the statistics**. {gt} and {gtExtras} format numbers you give them; {gtsummary} computes the summaries and tests for you. It uses {gt} as its default print engine, so `as_gt()` hands the finished table back to {gt} for final styling.
+:::
+
+## 2.2 Three Things I Learned Newly
+
+::: incremental
+1.  **`inline_text()` for in-line reporting.** It pulls one statistic (such as a p-value or a group's percentage) out of a table and writes it into a sentence, so the narrative and the table always match.[^1]
+2.  **Print engines beyond HTML.** A {gtsummary} table can be printed with {flextable} or {huxtable} (for example, `as_flex_table()`), which means the same code can produce tables for **Word** and **LaTeX/PDF**, not only HTML.
+3.  **Themes for formatting preferences, not only journals.** Besides journal themes, `theme_gtsummary_compact()` shrinks the padding and font size. I used it in this deck so wide tables fit on a slide.
+:::
+
+[^1]: I use `inline_text()` in Prompt 3 to report the purchase rates directly from the table.
+
+::: notes
+Dr. Jung's lecture focused on tbl_summary, tbl_cross, regression, and journal themes. These three items came from Sjoberg's talk: inline reporting, print engines, and the compact theme.
+:::
+
+# Prompt 3: Cross-Tabulation
+
+## Prompt 3
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+Apply what you learned to your MSDM CEP data. Choose two appropriate variables for cross-tabulation and show if the two variables are associated or not. Use appropriate statistics to test if the two variables are associated. Code, produce the table, and interpret the result.
+:::
+
+::: {.fragment}
+**My two variables:** traffic **channel** (paid vs. organic search, the independent variable) and whether the user **purchased** (the dependent variable). Both are categorical, so the right test is a **chi-square test of independence**. Following Dr. Jung's advice, the dependent variable goes in the **rows** and percentages are calculated **within each column**.
+:::
+
+## Prompt 3: Cross-Tab and Chi-Square Test
+
+```{r}
+#| label: tbl-cross
+#| tbl-cap: "Purchase by traffic channel (column percentages) with chi-square test"
+
+t_cross <- ga4 |>
+  tbl_cross(
+    row = purchased,
+    col = channel,
+    percent = "column",
+    margin = c("column", "row")
+  ) |>
+  add_p(test = "chisq.test", pvalue_fun = label_style_pvalue(digits = 3)) |>
+  bold_labels() |>
+  modify_caption("**Purchase rate by traffic channel**")
+
+t_cross
+```
+
+```{r}
+#| label: chi-check
+#| echo: false
+
+xt <- table(ga4$purchased, ga4$channel)
+chi <- chisq.test(xt, correct = FALSE)  # same test as add_p() in the table
+pct <- prop.table(xt, 2) * 100
+min_expected <- min(chi$expected)
+```
+
+::: small-note
+Expected-count check: the smallest expected cell is `r format(round(min_expected), big.mark = ",")`, well above 5, so the chi-square test is valid.
+:::
+
+## Prompt 3: Interpretation
+
+::: insight
+Paid search visitors purchased **`r sprintf("%.2f", pct["Yes", "Paid search"])`%** of the time, compared with **`r sprintf("%.2f", pct["Yes", "Organic search"])`%** for organic search visitors (@tbl-cross). `r if (chi$p.value < .05) "Channel and purchasing are **associated**" else "Channel and purchasing are **not significantly associated**"` (χ²(`r chi$parameter`) = `r sprintf("%.2f", chi$statistic)`, *p* `r if (chi$p.value < .001) "< .001" else paste("=", sprintf("%.3f", chi$p.value))`).
+:::
+
+::: {.fragment}
+**What this means for AO3:** in this sample, `r if (pct["Yes", "Paid search"] < pct["Yes", "Organic search"]) "organic visitors converted at a slightly higher rate than paid visitors, but the gap is small and not statistically significant, so paying for clicks did not bring buyers who were more likely to purchase" else "paid visitors converted at a higher rate than organic visitors"`. Prior research finds that sponsored search can raise conversion [@ghose2009], so the Farm Store should test Shopping Ads on a small scale with its own GA4 data before committing budget, while continuing to invest in SEO (PO3).
+:::
+
+::: notes
+Read the column percentages, not the counts: paid search has far fewer users than organic search, so raw counts would be misleading.
+:::
+
+# Prompt 4: Multiple Regression
+
+## Prompt 4
+
+::: {.callout-note appearance="simple"}
+## Prompt
+
+Using the MSDM CEP data, run multiple regression. The dependent variable can be continuous or dichotomous. Regress a dependent variable on a set of independent variables. Code, produce the table, and interpret the result.
+:::
+
+::: {.fragment}
+**Model:** the dependent variable, **purchased (yes/no)**, is dichotomous, so I use **multiple logistic regression** (`glm(family = binomial)`). The independent variables are traffic **channel**, **device**, **visitor type** (new vs. returning), **sessions**, and **engagement time**. This tests whether paid search still matters once the other factors are held constant.
+:::
+
+## Prompt 4: Fitting the Model
+
+```{r}
+#| label: fit-model
+
+m_logit <- glm(
+  purchased ~ channel + device + new_user + sessions + engagement_min,
+  data = ga4,
+  family = binomial
+)
+
+# Univariable (one predictor at a time) vs. multivariable models
+t_uv <- ga4 |>
+  select(purchased, channel, device, new_user, sessions, engagement_min) |>
+  tbl_uvregression(
+    method = glm,
+    y = purchased,
+    method.args = list(family = binomial),
+    exponentiate = TRUE,
+    pvalue_fun = label_style_pvalue(digits = 3)
+  )
+
+t_mv <- m_logit |>
+  tbl_regression(
+    exponentiate = TRUE,
+    pvalue_fun = label_style_pvalue(digits = 3)
+  ) |>
+  add_global_p() |>
+  bold_p(t = 0.05)
+```
+
+## Prompt 4: Regression Table
+
+```{r}
+#| label: tbl-regression
+#| tbl-cap: "Logistic regression of purchase: univariable vs. multivariable odds ratios"
+
+tbl_merge(
+  tbls = list(t_uv, t_mv),
+  tab_spanner = c("**Univariable**", "**Multivariable**")
+) |>
+  bold_labels() |>
+  modify_caption("**What predicts a purchase? (odds ratios)**")
+```
+
+```{r}
+#| label: model-values
+#| echo: false
+
+or <- exp(coef(m_logit))
+ci <- exp(confint.default(m_logit))
+pv <- summary(m_logit)$coefficients[, 4]
+fmt_p <- function(p) if (p < .001) "< .001" else paste("=", sprintf("%.3f", p))
+```
+
+## Prompt 4: Interpretation
+
+::: insight
+-   **Channel:** holding device, visitor type, sessions, and engagement constant, paid search visitors had **`r sprintf("%.2f", or["channelPaid search"])` times** the odds of purchasing compared with organic visitors (95% CI `r sprintf("%.2f", ci["channelPaid search", 1])` to `r sprintf("%.2f", ci["channelPaid search", 2])`, *p* `r fmt_p(pv["channelPaid search"])`).
+-   **Engagement:** each additional minute of engagement multiplied the odds of purchase by **`r sprintf("%.3f", or["engagement_min"])`** (*p* `r fmt_p(pv["engagement_min"])`), and each additional session by **`r sprintf("%.2f", or["sessions"])`** (*p* `r fmt_p(pv["sessions"])`).
+-   **Visitor type:** new visitors had only **`r sprintf("%.2f", or["new_userNew"])` times** the odds of returning visitors (*p* `r fmt_p(pv["new_userNew"])`), so **returning** visitors are far more likely to buy.
+-   **Device** did not significantly predict purchasing once the other factors were controlled (@tbl-regression).
+:::
+
+::: {.fragment}
+**Takeaway for AO3:** in Prompt 3, paid search converted *less* often than organic search. Once engagement and visitor type are held constant, that gap disappears and the paid search odds ratio is `r sprintf("%.2f", or["channelPaid search"])` (*p* `r fmt_p(pv["channelPaid search"])`). This suggests paid visitors are not worse shoppers; they are simply **less engaged** when they land. For the Farm Store, a Shopping Ads test should be paired with landing pages that keep visitors engaged and with ways to bring them **back** (returning visitors convert best).
+:::
+
+::: aside
+Engagement and purchasing influence each other (buyers spend time at checkout), so these coefficients describe associations, not causes.
+:::
+
+## Prompt 4: Model Diagnostics
+
+::: columns
+::: {.column width="50%"}
+```{r}
+#| label: tbl-glance
+#| tbl-cap: "Model fit statistics"
+
+t_mv |>
+  add_glance_table(include = c(nobs, AIC, BIC)) |>
+  as_gt() |>
+  tab_header(title = "Multivariable model with fit statistics")
+```
+:::
+
+::: {.column width="50%"}
+```{r}
+#| label: tbl-vif
+#| tbl-cap: "Multicollinearity check (GVIF)"
+
+m_logit |>
+  tbl_regression(exponentiate = TRUE) |>
+  add_vif()
+```
+
+::: small-note
+All adjusted GVIF values are close to 1, well under the common cutoff of 5, so the predictors are not too strongly correlated with one another.
+:::
+:::
+:::
+
+# Wrap Up
+
+## Quarto Features Used in This Deck {background-color="#F3D9DC"}
+
+[Incremental lists]{.fn-pill} [Fragments]{.fn-pill} [Columns]{.fn-pill} [Speaker notes]{.fn-pill} [Asides]{.fn-pill} [Footnotes]{.fn-pill} [Footer & logo]{.fn-pill} [Title slide]{.fn-pill} [Slide transitions]{.fn-pill} [Auto-animate]{.fn-pill} [Scrollable content overflow]{.fn-pill} [Background color]{.fn-pill} [Ready-made theme (serif)]{.fn-pill} [Custom Sass theme]{.fn-pill} [Sass variables]{.fn-pill} [CSS file]{.fn-pill} [Callouts]{.fn-pill} [Cross-references]{.fn-pill} [Citations (AMA)]{.fn-pill} [Inline R code]{.fn-pill}
+
+::: {.fragment}
+Press **S** to open the speaker notes view, which shows the notes I wrote for several slides.
+:::
+
+## References
+
+::: {#refs}
+:::
+
+## Appendix: Links
+
+-   [This presentation on GitHub Pages](https://jukedz.github.io/ibm6500-assignments/M08-Reflection-gtsummary/Diaz,%20Julieta-M08-Reflection%20Essay-gtsummary.html)
+-   [Source folder on GitHub](https://github.com/jukedz/ibm6500-assignments/tree/main/M08-Reflection-gtsummary)
