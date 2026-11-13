@@ -1,0 +1,296 @@
+---
+title: "Case 31: Summary of Data Analysis for H5a to H5d"
+subtitle: "Employees Federal Credit Union | Multiple regression on overall operational efficiency"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    embed-resources: true
+    code-fold: show
+    code-copy: true
+    df-print: kable
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Overview {.unnumbered}
+
+H5a to H5d share one dependent variable: members' **overall rating of how well the credit union is managed and operated** (Q37r). Each hypothesis names a different aspect of operations that should drive that rating.
+
+|   | Hypothesis: the following will **positively** influence overall attitude toward the CU's operational efficiency (Q37r) | Independent variable |
+|--------------|---------------------------------------------|--------------|
+| **H5a** | Belief that the CU keeps personal financial information confidential | Q31 |
+| **H5b** | Loan application processing promptness | Q32 |
+| **H5c** | Satisfaction with how well financial services meet members' needs | Q33 |
+| **H5d** | Loan application simplicity and ease | Q34 |
+
+: H5 hypotheses, from the Case 31 data analysis table
+
+::: callout-note
+## Why multiple regression
+
+The dependent variable and all four independent variables are **interval** scales, and each hypothesis predicts that an independent variable **influences** the dependent variable. A **multiple regression** tests all four at once and estimates each one's effect **while holding the other three constant**. That matters here because the predictors overlap (for example, Q32 and Q34 are both about loans): separate correlations or simple regressions would credit each item with variance it shares with the others. Because all four hypotheses are tested in one model, I examine each coefficient's sign and significance for H5a to H5d.
+:::
+
+# Data and Descriptive Statistics
+
+```{r}
+#| label: setup
+
+library(tidyverse)
+library(haven)
+library(psych)     # describe(), pairs.panels()
+library(car)       # vif(), avPlots(), influencePlot()
+library(lmtest)    # bptest(), coeftest()
+library(sandwich)  # vcovHC() robust standard errors
+library(knitr)
+
+efcu <- read_sav("data/Case 31 Data_efcu_4.sav") |>
+  zap_labels()
+
+# Keep the five variables; Q37r = overall rating (1 = very poor, 5 = excellent)
+h5 <- efcu |>
+  select(Q37_r, q31, q32, q33, q34) |>
+  drop_na()   # members who chose "no opinion" on Q37 are excluded
+
+nrow(h5)
+```
+
+`r nrow(h5)` of `r nrow(efcu)` members are included; `r nrow(efcu) - nrow(h5)` chose "no opinion" on the overall rating (Q37).
+
+```{r}
+#| label: tbl-desc
+#| tbl-cap: "Descriptive statistics (Q31 to Q34: 1 = strongly disagree, 5 = strongly agree; Q37r: 1 = very poor, 5 = excellent)"
+
+labels <- c(Q37_r = "Q37r: Overall management and operation (D.V.)",
+            q31 = "Q31: Keeps financial information confidential",
+            q32 = "Q32: Prompt in processing loan applications",
+            q33 = "Q33: Services meet members' needs",
+            q34 = "Q34: Loan applications simple and easy")
+
+describe(h5)[, c("n", "mean", "sd", "median", "min", "max", "skew")] |>
+  as.data.frame() |>
+  rownames_to_column("var") |>
+  mutate(Variable = labels[var], .before = 1) |>
+  select(-var) |>
+  mutate(across(where(is.numeric), ~ round(.x, 2)))
+```
+
+## Correlations
+
+```{r}
+#| label: tbl-cor
+#| tbl-cap: "Correlations among the five variables"
+
+cor_mat <- round(cor(h5), 2)
+dimnames(cor_mat) <- list(c("Q37r", "Q31", "Q32", "Q33", "Q34"), c("Q37r", "Q31", "Q32", "Q33", "Q34"))
+cor_mat
+```
+
+```{r}
+#| label: cor-tests
+
+# Each predictor's correlation with Q37r, with Bonferroni-adjusted p-values
+corr.test(h5$Q37_r, h5[, c("q31", "q32", "q33", "q34")], adjust = "bonferroni")$p |> round(4)
+```
+
+```{r}
+#| label: fig-pairs
+#| fig-cap: "Scatterplots, distributions, and correlations"
+#| fig-height: 6
+
+pairs.panels(h5, method = "pearson", hist.col = "#C99AA5", density = FALSE,
+             ellipses = FALSE, lm = TRUE, jiggle = TRUE,
+             labels = c("Q37r", "Q31", "Q32", "Q33", "Q34"))
+```
+
+The descriptives already tell most of the story. Members rate overall management highly (*M* = `r sprintf("%.2f", mean(h5$Q37_r))`). Promptness (Q32, *r* = `r sprintf("%.2f", cor(h5$Q37_r, h5$q32))`), meeting needs (Q33, *r* = `r sprintf("%.2f", cor(h5$Q37_r, h5$q33))`), and confidentiality (Q31, *r* = `r sprintf("%.2f", cor(h5$Q37_r, h5$q31))`) each move together with the overall rating, while simple applications (Q34) barely relate to it (*r* = `r sprintf("%.2f", cor(h5$Q37_r, h5$q34))`; @tbl-cor). Q34 does correlate with Q32 (*r* = `r sprintf("%.2f", cor(h5$q32, h5$q34))`), so the regression is needed to separate their effects.
+
+# Multiple Regression
+
+## Model
+
+$$
+\text{Q37r} = \beta_0 + \beta_1\,\text{Q31} + \beta_2\,\text{Q32} + \beta_3\,\text{Q33} + \beta_4\,\text{Q34} + \varepsilon
+$$
+
+```{r}
+#| label: fit
+
+fit <- lm(Q37_r ~ q31 + q32 + q33 + q34, data = h5)
+summary(fit)
+```
+
+```{r}
+#| label: std-betas
+
+# Standardized coefficients (beta): refit with all variables in z-scores
+fit_std <- lm(scale(Q37_r) ~ scale(q31) + scale(q32) + scale(q33) + scale(q34), data = h5)
+betas <- coef(fit_std)[-1]
+names(betas) <- c("q31", "q32", "q33", "q34")
+round(betas, 3)
+```
+
+```{r}
+#| label: tbl-reg
+#| tbl-cap: "Multiple regression of overall operational efficiency (Q37r) on Q31 to Q34"
+
+s <- summary(fit)$coefficients
+ci <- confint(fit)
+reg_tbl <- tibble(
+  Predictor = c("(Intercept)", labels[c("q31", "q32", "q33", "q34")]),
+  Hypothesis = c("", "H5a", "H5b", "H5c", "H5d"),
+  b = s[, 1], SE = s[, 2],
+  `95% CI` = sprintf("%.2f to %.2f", ci[, 1], ci[, 2]),
+  `β (standardized)` = c(NA, betas),
+  t = s[, 3], p = s[, 4]
+)
+reg_tbl |>
+  mutate(across(c(b, SE, `β (standardized)`, t), ~ round(.x, 3)),
+         p = ifelse(p < .001, "<.001", sub("^0", "", sprintf("%.3f", p))))
+```
+
+```{r}
+#| label: model-values
+#| echo: false
+
+fs <- summary(fit)
+fstat <- fs$fstatistic
+f_p <- pf(fstat[1], fstat[2], fstat[3], lower.tail = FALSE)
+p_of <- function(v) s[v, 4]
+fmt_p <- function(p) ifelse(p < .001, "< .001", paste("=", sub("^0", "", sprintf("%.3f", p))))
+```
+
+## Model Fit
+
+Together, the four aspects of operations **explain `r round(100 * fs$r.squared)`%** of the variation in members' overall rating (*R*² = `r sprintf("%.2f", fs$r.squared)`, adjusted *R*² = `r sprintf("%.2f", fs$adj.r.squared)`), and the model as a whole is significant (*F*(`r fstat[2]`, `r fstat[3]`) = `r sprintf("%.2f", fstat[1])`, *p* `r fmt_p(f_p)`).
+
+## Regression Diagnostics
+
+```{r}
+#| label: vif
+
+vif(fit)          # multicollinearity: values near 1 are ideal; above 5 is a concern
+```
+
+```{r}
+#| label: bp
+
+bptest(fit)       # Breusch-Pagan test: H0 = constant error variance
+```
+
+```{r}
+#| label: robust
+
+# Robust (HC3) standard errors as a check against heteroskedasticity
+coeftest(fit, vcov = vcovHC(fit, type = "HC3"))
+```
+
+```{r}
+#| label: fig-diag
+#| fig-cap: "Residual diagnostics"
+#| fig-height: 6
+
+par(mfrow = c(2, 2))
+plot(fit)
+par(mfrow = c(1, 1))
+```
+
+```{r}
+#| label: fig-av
+#| fig-cap: "Added-variable plots: each predictor's unique relationship with Q37r"
+#| fig-height: 5.5
+
+avPlots(fit, col = "#8A4B5E", col.lines = "#6B2737", pch = 16, main = "")
+```
+
+```{r}
+#| label: influence
+
+influencePlot(fit, main = "Influence plot")   # flags large residuals, leverage, Cook's D
+```
+
+```{r}
+#| label: diag-values
+#| echo: false
+
+bp <- bptest(fit)
+v <- vif(fit)
+cook <- cooks.distance(fit)
+```
+
+**Assumptions check out.** All VIFs are low (`r sprintf("%.2f", min(v))` to `r sprintf("%.2f", max(v))`), so multicollinearity is not a problem. The Breusch-Pagan test finds no heteroskedasticity (*p* `r fmt_p(bp$p.value)`), and robust standard errors lead to the same conclusions for every predictor. The residuals are somewhat skewed by a few members who gave a very low overall rating despite moderate answers on Q31 to Q34 (@fig-diag), but with `r nrow(h5)` cases the coefficient tests remain reliable, and no case has a Cook's distance above 1 (largest = `r sprintf("%.2f", max(cook))`).
+
+# Results by Hypothesis
+
+```{r}
+#| label: tbl-results
+#| tbl-cap: "Summary of hypothesis tests"
+
+tibble(
+  Hypothesis = c("H5a", "H5b", "H5c", "H5d"),
+  Predictor = labels[c("q31", "q32", "q33", "q34")],
+  b = round(s[2:5, 1], 2),
+  β = round(betas, 2),
+  p = ifelse(s[2:5, 4] < .001, "<.001", sub("^0", "", sprintf("%.3f", s[2:5, 4]))),
+  Result = ifelse(s[2:5, 4] < .05 & s[2:5, 1] > 0, "Supported", "Not supported")
+)
+```
+
+::: callout-tip
+## H5a: Supported (confidentiality)
+
+Members who believe the CU keeps their financial information confidential rate its overall management higher. Holding the other factors constant, each one-point increase in agreement with Q31 raises the overall rating by **`r sprintf("%.2f", s["q31", 1])`** points (β = `r sprintf("%.2f", betas["q31"])`, *p* `r fmt_p(p_of("q31"))`).
+:::
+
+::: callout-tip
+## H5b: Supported (loan processing promptness), the strongest driver
+
+**Promptness in processing loans has the largest effect** on the overall rating (b = `r sprintf("%.2f", s["q32", 1])`, β = `r sprintf("%.2f", betas["q32"])`, *p* `r fmt_p(p_of("q32"))`). Members judge how well the CU is run largely by how quickly it handles their loan applications.
+:::
+
+::: callout-tip
+## H5c: Supported (meeting members' needs)
+
+Members who feel the CU's services meet their needs rate it more highly (b = `r sprintf("%.2f", s["q33", 1])`, β = `r sprintf("%.2f", betas["q33"])`, *p* `r fmt_p(p_of("q33"))`), the second-strongest driver.
+:::
+
+::: callout-warning
+## H5d: Not supported (application simplicity)
+
+Once the other three factors are taken into account, how simple and easy the loan application is has **no significant effect** on the overall rating (b = `r sprintf("%.2f", s["q34", 1])`, *p* `r fmt_p(p_of("q34"))`). Its coefficient is even slightly negative. Q34's small correlation with the overall rating (*r* = `r sprintf("%.2f", cor(h5$Q37_r, h5$q34))`) runs mostly through its overlap with promptness (Q32): an easy application seems to matter to members mainly because it leads to a fast decision.
+:::
+
+# Overall Insight
+
+::: {.callout-note appearance="simple"}
+## What drives members' view of how well EFCU is run
+
+Members' overall opinion of the credit union's management is driven by **speed**, **fit**, and **trust**: how promptly loans are processed (H5b), whether services meet their needs (H5c), and whether their financial information is kept confidential (H5a). Simple paperwork on its own does not move the needle (H5d). Together these explain about **`r round(100 * fs$r.squared)`%** of the overall rating.
+
+**Implications for EFCU:**
+
+- **Make speed the priority.** Faster loan decisions improve members' overall impression the most, and they also support the CU's goal of increasing loan volume.
+- **Close the needs gap.** H1 showed that members who use the regular share account feel their needs are met less well; improving that product should lift overall ratings.
+- **Reinforce privacy.** Because about 30% of members doubted confidentiality in R6 (Q12), communicating privacy safeguards is a low-cost way to raise overall satisfaction.
+:::
+
+# Appendix {.unnumbered}
+
+## Project Links {.unnumbered}
+
+- [GitHub Repository](https://github.com/jukedz/ibm6500-assignments/tree/main/IC-Case31-Summary-H5)
+- [GitHub Pages Website](https://jukedz.github.io/ibm6500-assignments/IC-Case31-Summary-H5/julieta-diaz-case31-h5.html)
