@@ -1,0 +1,380 @@
+---
+title: "Case 31: Reliability and Factor Analysis"
+subtitle: "R3 (Attitude toward Employee Proficiency) and R6 (Attitude toward Operational Effectiveness)"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    toc-title: "Contents"
+    number-sections: true
+    embed-resources: true
+    code-fold: show
+    code-copy: true
+    df-print: kable
+    link-external-newwindow: true
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Overview {.unnumbered}
+
+When a construct is measured with several questions, the scale must be **valid** (it measures the intended construct) and **reliable** (the items measure it consistently) before the items are averaged into one score. This report checks both properties for the two multi-item scales in Case 31:
+
+| Research question | Construct | Items | Scale |
+|-------------|-----------------------------|-------------|-----------------------|
+| **R3** | Attitude toward employee proficiency | Q3 to Q6 | 5-point agreement (1 = strongly disagree, 5 = strongly agree) |
+| **R6** | Attitude toward operational effectiveness | Q31 to Q34 | 5-point agreement |
+
+: Multi-item scales in Case 31 {#tbl-scales}
+
+The analysis follows four steps:
+
+1.  **Suitability:** are the items correlated enough to factor (correlations, KMO, Bartlett's test)?
+2.  **Convergent validity:** do each scale's items form **one** factor with strong loadings and communalities?
+3.  **Discriminant validity:** when all eight items are analyzed together, do they separate into the two intended constructs?
+4.  **Reliability:** is Cronbach's alpha at least .70, and would dropping any item help?
+
+::: callout-note
+## Scope
+
+This report only evaluates the **measurement quality** of the scales and decides whether a composite score should be created. Insights about what members think (answering R3 and R6) are a separate M13 activity.
+:::
+
+# Setup
+
+```{r}
+#| label: packages
+
+library(tidyverse)
+library(haven)       # read the SPSS file
+library(psych)       # KMO, Bartlett, fa(), fa.parallel(), alpha()
+library(GPArotation) # oblimin rotation
+library(knitr)
+```
+
+```{r}
+#| label: data
+
+efcu <- read_sav("data/Case 31 Data_efcu_1.sav") |>
+  zap_labels()
+
+r3_items <- efcu |> select(q3:q6) |> as.data.frame()     # employee proficiency
+r6_items <- efcu |> select(q31:q34) |> as.data.frame()   # operational effectiveness
+all_items <- bind_cols(r3_items, r6_items)
+
+colSums(is.na(all_items))   # no missing values on these items
+```
+
+| Item | Wording |
+|------|-----------------------------------------------------------------|
+| Q3 | Credit union employees are courteous |
+| Q4 | Credit union employees are helpful |
+| Q5 | Credit union employees are professional |
+| Q6 | Credit union employees are always available |
+| Q31 | Credit union personnel keep my financial information confidential |
+| Q32 | The credit union is prompt in processing loan applications |
+| Q33 | The credit union's services meet the needs of its members |
+| Q34 | Credit union loan applications are simple and easy to complete |
+
+: Item wording {#tbl-items}
+
+All 128 respondents answered every item, and none of these items is reverse-worded, so no recoding is needed.
+
+```{r}
+#| label: helpers
+#| code-fold: true
+
+# Small helper to print suitability statistics as one row
+suitability <- function(x, name) {
+  r <- cor(x)
+  k <- KMO(x)
+  b <- cortest.bartlett(r, n = nrow(x))
+  tibble(Scale = name,
+         KMO = round(k$MSA, 3),
+         `Bartlett chi-square` = round(b$chisq, 1),
+         df = b$df,
+         p = ifelse(b$p.value < .001, "<.001", sprintf("%.3f", b$p.value)),
+         `Eigenvalues > 1` = sum(eigen(r)$values > 1))
+}
+```
+
+# R3: Attitude toward Employee Proficiency (Q3 to Q6)
+
+## Correlations and Suitability
+
+```{r}
+#| label: tbl-r3-cor
+#| tbl-cap: "R3 inter-item correlations"
+
+round(cor(r3_items), 2)
+```
+
+```{r}
+#| label: tbl-r3-suit
+#| tbl-cap: "R3 suitability for factor analysis"
+
+suitability(r3_items, "R3 (Q3 to Q6)")
+```
+
+```{r}
+#| label: r3-kmo-items
+
+KMO(r3_items)$MSAi |> round(2)   # item-level sampling adequacy
+```
+
+The items correlate strongly with each other (from .46 to .72). The overall **KMO is `r round(KMO(r3_items)$MSA, 2)`** ("middling" to "meritorious"; above the .60 minimum), every item's KMO is above .70, and **Bartlett's test is significant**, so the correlation matrix is suitable for factor analysis.
+
+## Number of Factors
+
+```{r}
+#| label: fig-r3-scree
+#| fig-cap: "R3 scree plot with parallel analysis"
+#| fig-height: 4
+
+set.seed(2026)
+r3_pa <- fa.parallel(r3_items, fm = "pa", fa = "fa",
+                     main = "R3: Scree plot and parallel analysis")
+```
+
+Only the first eigenvalue (`r round(eigen(cor(r3_items))$values[1], 2)`) is above 1, the scree plot bends sharply after the first factor, and parallel analysis suggests **`r r3_pa$nfact`** factor. All three criteria agree: **one factor**.
+
+## One-Factor Solution (Convergent Validity)
+
+```{r}
+#| label: r3-efa
+
+r3_fa <- fa(r3_items, nfactors = 1, fm = "pa")   # principal axis factoring
+print(r3_fa$loadings, cutoff = 0)
+```
+
+```{r}
+#| label: tbl-r3-load
+#| tbl-cap: "R3 loadings, communalities, and uniquenesses"
+
+tibble(Item = rownames(r3_fa$loadings),
+       Loading = round(as.numeric(r3_fa$loadings), 3),
+       Communality = round(r3_fa$communality, 3),
+       Uniqueness = round(r3_fa$uniquenesses, 3))
+```
+
+Every loading is well above the common .50 guideline (from `r sprintf("%.2f", min(r3_fa$loadings))` to `r sprintf("%.2f", max(r3_fa$loadings))`), every communality is above .50, and the single factor explains **`r round(100 * r3_fa$Vaccounted[2, 1])`%** of the variance in the four items. A single factor with high loadings and communalities is evidence of **convergent validity**: Q3 to Q6 all reflect the same attitude toward employees.
+
+## Reliability
+
+```{r}
+#| label: r3-alpha
+
+r3_alpha <- psych::alpha(r3_items)
+r3_alpha$total |> round(3)
+```
+
+```{r}
+#| label: tbl-r3-drop
+#| tbl-cap: "R3 item statistics: alpha if item deleted and corrected item-total correlation"
+
+tibble(Item = rownames(r3_alpha$alpha.drop),
+       `Alpha if deleted` = round(r3_alpha$alpha.drop$raw_alpha, 3),
+       `Item-total r (corrected)` = round(r3_alpha$item.stats$r.drop, 3),
+       Mean = round(r3_alpha$item.stats$mean, 2),
+       SD = round(r3_alpha$item.stats$sd, 2))
+```
+
+The four-item employee proficiency scale has a **Cronbach's alpha of `r sprintf("%.2f", r3_alpha$total$raw_alpha)`**, well above the .70 threshold, indicating high internal consistency. The average inter-item correlation is `r sprintf("%.2f", r3_alpha$total$average_r)`. Dropping any item would **lower** alpha (to between `r sprintf("%.2f", min(r3_alpha$alpha.drop$raw_alpha))` and `r sprintf("%.2f", max(r3_alpha$alpha.drop$raw_alpha))`), and every corrected item-total correlation is above .60, so all four items should be kept.
+
+# R6: Attitude toward Operational Effectiveness (Q31 to Q34)
+
+## Correlations and Suitability
+
+```{r}
+#| label: tbl-r6-cor
+#| tbl-cap: "R6 inter-item correlations"
+
+round(cor(r6_items), 2)
+```
+
+```{r}
+#| label: tbl-r6-suit
+#| tbl-cap: "R6 suitability for factor analysis"
+
+suitability(r6_items, "R6 (Q31 to Q34)")
+```
+
+```{r}
+#| label: r6-kmo-items
+
+KMO(r6_items)$MSAi |> round(2)
+```
+
+The R6 items are **weakly** related. Most correlations are below .30, and Q34 is essentially uncorrelated with Q31 (`r sprintf("%.2f", cor(r6_items)["q31","q34"])`) and Q33 (`r sprintf("%.2f", cor(r6_items)["q33","q34"])`). Although Bartlett's test is significant (the matrix is not an identity matrix), the **overall KMO is only `r round(KMO(r6_items)$MSA, 2)`**, below the .50 minimum ("unacceptable"), and three of the four items have item-level KMO values under .50. The items do not share enough common variance to support a single factor.
+
+## Number of Factors
+
+```{r}
+#| label: fig-r6-scree
+#| fig-cap: "R6 scree plot with parallel analysis"
+#| fig-height: 4
+
+set.seed(2026)
+r6_pa <- fa.parallel(r6_items, fm = "pa", fa = "fa",
+                     main = "R6: Scree plot and parallel analysis")
+```
+
+The criteria **disagree**. **Two** eigenvalues are above 1 (`r paste(round(eigen(cor(r6_items))$values[1:2], 2), collapse = " and ")`), so the Kaiser rule points to two factors, and the scree plot has no clear elbow. Parallel analysis suggests `r r6_pa$nfact` factor`r if (r6_pa$nfact > 1) "s" else ""`, but the first eigenvalue (`r round(eigen(cor(r6_items))$values[1], 2)`) is only slightly larger than what random data would produce. For R3, all criteria pointed clearly to one strong factor; for R6, the evidence for **any** strong common factor is weak.
+
+## One-Factor Solution (Convergent Validity)
+
+```{r}
+#| label: r6-efa
+
+r6_fa <- fa(r6_items, nfactors = 1, fm = "pa")
+print(r6_fa$loadings, cutoff = 0)
+```
+
+```{r}
+#| label: tbl-r6-load
+#| tbl-cap: "R6 loadings, communalities, and uniquenesses (one-factor solution)"
+
+tibble(Item = rownames(r6_fa$loadings),
+       Loading = round(as.numeric(r6_fa$loadings), 3),
+       Communality = round(r6_fa$communality, 3),
+       Uniqueness = round(r6_fa$uniquenesses, 3))
+```
+
+When forced into one factor, Q32's loading is **`r sprintf("%.2f", r6_fa$loadings["q32", 1])`**, which is impossible for a standardized loading (it implies a negative unique variance). This is called a **Heywood case**, and it happened with every common-factor method I tried (principal axis, minimum residual, and maximum likelihood). A Heywood case is a sign that the one-factor model does not fit: the "factor" is essentially Q32 alone. The other three items load weakly (`r sprintf("%.2f", r6_fa$loadings["q31", 1])` to `r sprintf("%.2f", r6_fa$loadings["q34", 1])`) and have communalities far below .50. This is **not** evidence of convergent validity.
+
+```{r}
+#| label: r6-efa2
+
+# Exploring the two factors suggested by the eigenvalues and parallel analysis
+r6_fa2 <- fa(r6_items, nfactors = 2, fm = "pa", rotate = "oblimin")
+print(r6_fa2$loadings, cutoff = 0)
+```
+
+The two-factor solution separates **loan-process** items from the others: Q32 (prompt loans) and Q34 (simple applications) group together, while Q31 (confidentiality) and Q33 (meets needs) do not form a clear factor of their own. Looking back at the wording in @tbl-items, this makes sense: the four questions cover **different aspects** of operations (privacy, loan speed, service fit, and paperwork), not one underlying attitude.
+
+## Reliability
+
+```{r}
+#| label: r6-alpha
+
+r6_alpha <- psych::alpha(r6_items)
+r6_alpha$total |> round(3)
+```
+
+```{r}
+#| label: tbl-r6-drop
+#| tbl-cap: "R6 item statistics: alpha if item deleted and corrected item-total correlation"
+
+tibble(Item = rownames(r6_alpha$alpha.drop),
+       `Alpha if deleted` = round(r6_alpha$alpha.drop$raw_alpha, 3),
+       `Item-total r (corrected)` = round(r6_alpha$item.stats$r.drop, 3),
+       Mean = round(r6_alpha$item.stats$mean, 2),
+       SD = round(r6_alpha$item.stats$sd, 2))
+```
+
+```{r}
+#| label: r6-alpha-pair
+
+# Best-case two-item subscale: the loan-process items
+alpha_loan <- psych::alpha(r6_items[, c("q32", "q34")])$total$raw_alpha
+round(alpha_loan, 3)
+```
+
+The four-item operational effectiveness scale has a **Cronbach's alpha of only `r sprintf("%.2f", r6_alpha$total$raw_alpha)`**, far below .70, with an average inter-item correlation of `r sprintf("%.2f", r6_alpha$total$average_r)`. Deleting any single item does not fix the problem (the best "alpha if deleted" is `r sprintf("%.2f", max(r6_alpha$alpha.drop$raw_alpha))`), and three items have corrected item-total correlations below .30. Even the two loan-process items together (Q32 and Q34) reach only α = `r sprintf("%.2f", alpha_loan)`.
+
+# Discriminant Validity: All Eight Items Together
+
+If the two constructs are distinct, a factor analysis of all eight items should produce **two factors**, with Q3 to Q6 loading on one and Q31 to Q34 on the other, and few cross-loadings.
+
+```{r}
+#| label: tbl-all-suit
+#| tbl-cap: "Suitability of the combined eight items"
+
+suitability(all_items, "All eight items")
+```
+
+```{r}
+#| label: all-efa
+
+set.seed(2026)
+all_pa <- fa.parallel(all_items, fm = "pa", fa = "fa", plot = FALSE)
+all_pa$nfact   # factors suggested by parallel analysis
+
+all_fa <- fa(all_items, nfactors = 2, fm = "pa", rotate = "oblimin")
+print(all_fa$loadings, cutoff = 0)
+round(all_fa$Phi, 2)   # correlation between the two factors
+```
+
+```{r}
+#| label: tbl-all-load
+#| tbl-cap: "Two-factor pattern matrix for all eight items (oblimin rotation); primary loading in bold"
+
+L <- unclass(all_fa$loadings)
+# Name each factor by the scale whose items load on it most
+emp_col <- which.max(colSums(abs(L[c("q3","q4","q5","q6"), ])))
+ops_col <- setdiff(1:2, emp_col)
+tibble(Item = rownames(L),
+       `Intended construct` = rep(c("Employee proficiency (R3)", "Operational effectiveness (R6)"), each = 4),
+       `Factor 1: employees` = round(L[, emp_col], 2),
+       `Factor 2: loan process` = round(L[, ops_col], 2)) |>
+  mutate(across(starts_with("Factor"),
+                ~ ifelse(abs(.x) == pmax(abs(`Factor 1: employees`), abs(`Factor 2: loan process`)),
+                         paste0("**", .x, "**"), as.character(.x))))
+```
+
+**Interpretation.** Parallel analysis suggests `r all_pa$nfact` factors, and the two-factor solution reproduces the **employee proficiency** construct cleanly: Q3 to Q6 load strongly on the first factor with small cross-loadings, which supports the **discriminant validity of R3**. The R6 items do not behave as one construct. Q32 and Q34 (loan processing) form the second factor, but **Q33** ("services meet members' needs") loads more on the **employee** factor than on its intended one, and **Q31** (confidentiality) loads weakly on both. So R6 lacks discriminant validity as a four-item scale; its items do not separate cleanly from the employee items or hold together as their own factor. The two factors correlate at `r sprintf("%.2f", all_fa$Phi[1, 2])`, a moderate relationship, which is expected because both concern members' experience with the same credit union.
+
+# Summary and Implications for the Next Step
+
+```{r}
+#| label: tbl-summary
+#| tbl-cap: "Summary of validity and reliability evidence"
+
+tibble(
+  Criterion = c("KMO (at least .60)", "Bartlett's test", "Number of factors (Kaiser / parallel)",
+                "Loadings of .50 or higher", "Admissible one-factor solution",
+                "Cronbach's alpha (at least .70)", "Clean separation from the other scale",
+                "Decision"),
+  `R3: Employee proficiency (Q3 to Q6)` = c(
+    sprintf("%.2f (pass)", KMO(r3_items)$MSA), "Significant (pass)",
+    sprintf("%d / %d (pass)", sum(eigen(cor(r3_items))$values > 1), r3_pa$nfact),
+    "All four (pass)", sprintf("Yes; explains %.0f%% of variance (pass)", 100 * r3_fa$Vaccounted[2, 1]),
+    sprintf("%.2f (pass)", r3_alpha$total$raw_alpha), "Yes (pass)",
+    "**Create a composite**"),
+  `R6: Operational effectiveness (Q31 to Q34)` = c(
+    sprintf("%.2f (fail)", KMO(r6_items)$MSA), "Significant",
+    sprintf("%d / %d (inconsistent)", sum(eigen(cor(r6_items))$values > 1), r6_pa$nfact),
+    "Only Q32 (fail)", "No; Heywood case on Q32 (fail)",
+    sprintf("%.2f (fail)", r6_alpha$total$raw_alpha), "No (fail)",
+    "**Analyze items separately**")
+)
+```
+
+::: {.callout-tip}
+## R3: create a composite scale
+
+The employee proficiency items show **convergent validity** (one factor, loadings from `r sprintf("%.2f", min(r3_fa$loadings))` to `r sprintf("%.2f", max(r3_fa$loadings))`), **discriminant validity** (they separate cleanly from the R6 items), and **high reliability** (α = `r sprintf("%.2f", r3_alpha$total$raw_alpha)`). In the next step, Q3 to Q6 will be averaged into one composite, **att_employee** (`rowMeans()` of the four items, range 1 to 5), and that single score will be used to describe members' attitudes (R3) and to compare groups, such as headquarters vs. other members (R4a).
+:::
+
+::: {.callout-warning}
+## R6: do not create a composite scale
+
+The operational effectiveness items fail both validity and reliability checks: KMO = `r sprintf("%.2f", KMO(r6_items)$MSA)`, inconsistent evidence on the number of factors, an inadmissible (Heywood) one-factor solution with weak loadings for three items, and α = `r sprintf("%.2f", r6_alpha$total$raw_alpha)`, with no single item deletion that fixes it. Averaging them would mix four different ideas (confidentiality, loan speed, service fit, and application ease) into one number that does not mean anything clear. In the next step, **Q31, Q32, Q33, and Q34 will be analyzed as separate single items** (descriptive statistics and one-sample *t*-tests for each), as planned in the data analysis table for R6. If the questionnaire were revised, each aspect of operations should be measured with its own set of three or more items.
+:::
+
+# Appendix {.unnumbered}
+
+## Project Links {.unnumbered}
+
+-   [GitHub Repository](https://github.com/jukedz/ibm6500-assignments/tree/main/IC-Case31-Reliability-Factor-Analysis)
+-   [GitHub Pages Website](https://jukedz.github.io/ibm6500-assignments/IC-Case31-Reliability-Factor-Analysis/case31-reliability-factor-analysis.html)
