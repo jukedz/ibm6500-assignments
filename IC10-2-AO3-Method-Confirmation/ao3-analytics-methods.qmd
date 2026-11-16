@@ -1,5 +1,5 @@
 ---
-title: "Analytics Methods to Employ: AO3"
+title: "Analytics Methods to Employ: AO1 to AO4"
 subtitle: "CPP Farm Store CEP | Team 5 | IC10-2 Analytics Objective and Method Confirmation"
 author: "Julieta Diaz"
 date: today
@@ -11,6 +11,7 @@ format:
       - cosmo
       - theme.scss
     toc: true
+    toc-depth: 4
     toc-location: left
     toc-title: "Contents"
     embed-resources: true
@@ -23,10 +24,112 @@ editor: visual
 ::: callout-note
 ## How to use this file
 
-The section below is written to drop into **Chapter 3** of the CEP report under the team's "Analytics Methods to Employ" heading. The `###` heading for AO3 matches the GP06 format, so it can be copied into the group `.qmd` as is.
+This file covers the analytics methods for **all four analytics objectives (AO1 to AO4)** of the CPP Farm Store CEP. Each AO section is written to drop into **Chapter 3** of the CEP report under the "Analytics Methods to Employ" heading. The `###` headings match the GP06 format, so each section can be copied into the group `.qmd` as is.
 :::
 
+## Overview of the Analytics Objectives
+
+| AO | Analytics objective | Project objective supported | Owner | Main data source |
+|----|------------------|------------------|-----------|------------------|
+| AO1 | Generate insights from online store and Clover POS data to assess online storefront performance and identify friction points in the Clover-integrated purchase process | PO1: Launch an online storefront and implement the best feasible Clover-Online store approach | Danielle Meza | Clover POS transaction, catalog, and inventory data; online store order data |
+| AO2 | Analyze Clover sales and inventory data to identify category- and SKU-level demand patterns, evaluate inventory performance, and recommend assortment and replenishment strategies | PO2: Enhance the online shopping experience and the effectiveness of the e-commerce channel | Jungmin Woo | Clover daily sales reports and inventory records |
+| AO3 | Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion | PO3: Optimize the websites (cpp.com and the online store) through SEO strategies | Julieta Diaz | GA4 event data in BigQuery (Google Ads, subject to access) |
+| AO4 | Identify the factors that drive customers' attitudes toward and intention to use a digital loyalty program, and set up the purchase data needed for RFM segmentation | PO4: Design, implement, and promote a digital loyalty program that replaces punch cards | Cecilia Espina | Primary customer survey (team-wide); loyalty purchase histories after launch |
+
+: Analytics objectives, owners, and data sources {#tbl-overview}
+
 ## Analytics Methods to Employ
+
+### AO1: Generate insights from online store and Clover POS data to assess online storefront performance and identify friction points in the Clover-integrated purchase process
+
+**Project objective supported.** AO1 supports PO1, *Launch an online storefront for an approved assortment and implement the best feasible Clover-Online store approach for payments, catalog, inventory, orders, and customer data.* A storefront only helps the Farm Store if customers can find products that are actually in stock, pay without problems, and receive their orders. AO1 measures how well the Clover-integrated storefront supports that purchase process and where it breaks down, so the team can recommend specific fixes to the integration.
+
+#### Data source and unit of analysis
+
+The data come from **Clover POS reports** (transactions, item catalog, and inventory) and the **online store's order records**, subject to receiving reporting access and platform permissions. The units of analysis are the **order** (for performance and friction measures) and the **SKU** (for catalog and inventory consistency). Orders from both channels will be combined into one table with a `channel` field (online vs. in-store), and the online catalog will be joined to the Clover inventory list by SKU.
+
+#### Method 1: Storefront performance KPIs and trend analysis
+
+**What it is.** A descriptive analysis of the storefront's key performance indicators by week: number of online orders, online revenue, online share of total revenue, average order value, and (where the platform reports it) add-to-cart and checkout completion rates.
+
+**Why I am using it.** These KPIs give the Farm Store a baseline for how the new storefront performs and show whether online sales are growing after launch. Research links stronger channel integration to better customer experience, satisfaction, and loyalty [@liu2024], so tracking these outcomes over time shows whether the integration is delivering that value.
+
+#### Method 2: Catalog and inventory consistency audit
+
+**What it is.** A SKU-by-SKU comparison of the online catalog with Clover's inventory records. Each SKU is flagged for mismatches: listed online but out of stock in Clover, in stock but not listed online, or a different price between the two systems. The discrepancy rate will be summarized by product category, and a chi-square test of independence will check whether mismatches are concentrated in certain categories (for example, produce vs. packaged goods).
+
+**Why I am using it.** Inaccurate availability information is one of the clearest friction points in an integrated storefront, and sharing reliable inventory information changes how customers buy across channels [@gallino_integration_2014]. Because the Farm Store currently enters inventory manually, this audit shows where sync errors happen and which categories need automated updates first.
+
+#### Method 3: Friction-point analysis of orders
+
+**What it is.** An analysis of orders that did not complete smoothly: cancelled, refunded, or failed-payment orders, and the time from order to fulfillment. The rate of each problem will be compared by category, fulfillment method (pickup vs. delivery, if offered), and week. Online and in-store transactions will also be compared on average transaction value with an independent-samples (Welch) *t*-test.
+
+**Why I am using it.** E-commerce efforts often succeed or stall because of operational factors beyond the storefront design itself [@thenoz2024a]. Locating where orders fail (payment, stock, or fulfillment) turns the analysis into specific, actionable recommendations for PO1.
+
+**Variables/features.**
+
+| Role | Variable | Source | Type |
+|------------------|------------------|--------------------|------------------|
+| Outcome | Order completed vs. cancelled/refunded | Order status | Binary |
+| Outcome | Order value and revenue | Clover transactions, online orders | Continuous |
+| Outcome | Fulfillment time (hours) | Order and fulfillment timestamps | Continuous |
+| Grouping | Channel (online vs. in-store) | Order source | Categorical |
+| Grouping | Product category | Clover catalog | Categorical |
+| Audit | Inventory mismatch flag | Clover inventory vs. online catalog, by SKU | Binary |
+| Audit | Price mismatch flag | Clover price vs. online price, by SKU | Binary |
+| Time | Order date and week | Transaction timestamp | Date |
+
+: Variables for AO1
+
+**Tools and limitations.** Data will be cleaned and joined in **R** (tidyverse), with tests using `chisq.test()` and `t.test()`. The main limitations are that access to Clover reporting and the storefront platform is still pending, and that a newly launched storefront may have few orders at first, so the early results will be mostly descriptive.
+
+### AO2: Analyze Clover sales and inventory data to identify category- and SKU-level demand patterns, evaluate inventory performance, and recommend data-driven assortment and replenishment strategies
+
+**Project objective supported.** AO2 supports PO2, *Enhance the Farm Store's online shopping experience and increase the effectiveness of its e-commerce channel.* Knowing which products sell, when they sell, and which ones run out or sit on the shelf lets the Farm Store choose the right online assortment and keep it in stock, which directly affects the online shopping experience.
+
+#### Data source and unit of analysis
+
+The data come from the **Clover daily sales reports** already sent to Dr. Jung, plus Clover **item-level sales** and **inventory** records, subject to data availability. The units of analysis are the **SKU-day** (units and revenue for each product on each day), the **category**, and the **transaction** (for basket analysis).
+
+#### Method 1: Descriptive demand analysis and ABC (Pareto) classification
+
+**What it is.** Summaries of revenue, units sold, and sales trends by category and SKU, followed by an **ABC classification** that ranks SKUs by their share of revenue (A = top items making up about 80% of revenue, B = the next 15%, C = the remaining 5%).
+
+**Why I am using it.** ABC classification shows which products matter most to revenue, so the Farm Store can prioritize them in the online assortment and in replenishment. It is easy for managers to read and leads directly to an assortment recommendation.
+
+#### Method 2: Time pattern analysis
+
+**What it is.** Daily and weekly sales plotted with moving averages to show trends and seasonality, and a one-way ANOVA (with Tukey post hoc tests, or Welch's ANOVA if variances differ) comparing average daily sales across days of the week.
+
+**Why I am using it.** A campus farm store's demand likely follows the academic calendar, harvest seasons, and weekday traffic. Testing whether day-of-week differences are real tells the store when to restock and when to schedule online promotions.
+
+#### Method 3: Inventory performance metrics
+
+**What it is.** For each SKU and category: inventory turnover (units sold ÷ average units on hand), days of supply, and flags for likely **stockouts** (zero on hand or zero sales on days the item is normally sold) and **overstock** (days of supply well above the category average).
+
+**Why I am using it.** These metrics address the client's concerns about manual inventory entry and shrink. Reliable inventory availability affects sales and channel choice [@gallino_integration_2014], so identifying stockout-prone and overstocked items supports both replenishment decisions and an accurate online catalog.
+
+#### Method 4: Market basket analysis
+
+**What it is.** Association rule mining on transaction-level data (the `arules` package in R) to find products that are frequently bought together, reported with **support**, **confidence**, and **lift**. Average transaction value and basket size will also be summarized.
+
+**Why I am using it.** Product pairs with high lift suggest bundles (for example, gift baskets) and "frequently bought together" suggestions for the online store, which improve the utilitarian shopping experience that omnichannel research links to stronger loyalty [@zhang_demonstrating_2024].
+
+**Variables/features.**
+
+| Role | Variable | Source | Type |
+|------------------|------------------|--------------------|------------------|
+| Outcome | Units sold and revenue per SKU per day | Clover daily sales reports | Count / continuous |
+| Outcome | Inventory on hand, turnover, days of supply | Clover inventory | Continuous |
+| Grouping | SKU, product category | Clover catalog | Categorical |
+| Grouping | Day of week, week, month | Transaction date | Categorical / date |
+| Derived | ABC class (A, B, C) | Cumulative revenue share | Ordinal |
+| Derived | Stockout and overstock flags | Inventory and sales | Binary |
+| Basket | Items per transaction, transaction value | Clover transactions | Count / continuous |
+
+: Variables for AO2
+
+**Tools and limitations.** Data will be prepared in **R** (tidyverse, lubridate), with `aov()` and `TukeyHSD()` for Method 2 and `arules` for Method 4, and results presented in a dashboard for Farm Store managers. The main limitations are that the daily reports may not include transaction-level detail (needed for basket analysis), and that manual inventory entry may introduce errors, which is why the consistency of the reports is being checked first.
 
 ### AO3: Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion
 
@@ -84,6 +187,55 @@ The primary data source is the CPP Farm Store's **Google Analytics 4 (GA4) event
 
 Data will be extracted with SQL in **BigQuery** and analyzed in **R** (tidyverse for wrangling, `chisq.test()` and `prop.test()` for Method 2, and `glm(family = binomial)` for Method 3), with all work documented in Quarto. The main limitations are: (1) access to the Farm Store's GA4 property is still pending, so results so far come from the sample dataset; (2) GA4 assigns credit to the channel that brought the user, so multi-channel paths are simplified; and (3) if the Farm Store's online traffic is small, the tests may not reach significance, in which case the funnel results will carry more weight in the recommendation.
 
+### AO4: Identify the factors that drive customers' attitudes toward and intention to use a digital loyalty program, and set up the purchase data needed for RFM segmentation
+
+**Project objective supported.** AO4 supports PO4, *Design, implement, and promote a digital loyalty program that can replace punch cards and support consented purchase histories and future RFM segmentation.* Punch cards give the Farm Store no record of repeat customers [@loffler2010]. Before designing the replacement, the store needs to know whether customers want a digital program and what would make them use it.
+
+#### Data source and unit of analysis
+
+The data come from the team's **primary customer survey**, with the **individual respondent** as the unit of analysis. The survey measures attitudes toward an electronic loyalty program, intention to use it, perceived usefulness, ease of use, trust in how purchase data is handled, current store usage (visit frequency, punch card use), and demographics. After launch, the program's **consented purchase histories** (customer ID, date, and amount of each purchase) will provide the data for RFM segmentation.
+
+#### Method 1: Descriptive analysis of survey responses
+
+**What it is.** Frequencies, percentages, means, and standard deviations for every survey item, plus cross-tabulations of interest in a digital program by customer group (students, faculty and staff, community members).
+
+**Why I am using it.** Descriptives tell the story first: how many customers currently use punch cards, how many would switch, and which groups are most interested. This shapes the program's design and promotion.
+
+#### Method 2: Reliability and factor analysis of the multi-item scales
+
+**What it is.** Exploratory factor analysis (principal axis factoring) to confirm that each multi-item scale (perceived usefulness, ease of use, trust, attitude, and intention) is unidimensional, and Cronbach's alpha to check reliability (.70 or higher). Scales that pass both checks are averaged into composite indices.
+
+**Why I am using it.** The regression in Method 3 needs valid and reliable measures of each construct. This is the same unidimensional-and-reliable rule used in the Case 31 analysis.
+
+#### Method 3: Multiple regression predicting intention to use
+
+**What it is.** A multiple linear regression with **intention to use the digital loyalty program** as the outcome and perceived usefulness, ease of use, and trust as predictors, controlling for visit frequency, current punch card use, and customer group. Assumptions will be checked (VIF for multicollinearity, Breusch-Pagan for heteroscedasticity, with robust standard errors if needed). An independent-samples *t*-test or one-way ANOVA will compare intention across customer groups.
+
+**Why I am using it.** Prior research based on the Technology Acceptance Model shows that perceived usefulness drives intention to use mobile apps [@lin_does_2019], and that trust shapes adoption of apps that handle personal data [@su_modeling_2022]. Regression shows which of these factors matters most for Farm Store customers, so the program's promotion can emphasize it (for example, convenience vs. data privacy).
+
+#### Method 4: RFM segmentation (after launch)
+
+**What it is.** Once purchase histories build up, each customer will be scored on **Recency** (days since last purchase), **Frequency** (number of purchases), and **Monetary** value (total spending), using quintile scores from 1 to 5, and grouped into segments (for example, loyal, at risk, new). K-means clustering on the RFM scores may be used if the customer base is large enough.
+
+**Why I am using it.** RFM turns purchase histories into customer segments for targeted rewards, and it has been applied even to small businesses with modest customer bases [@rahadian_customer_2026]. Loyalty data can also complement small-business owners' own knowledge of their customers [@donnelly_digital_2015].
+
+**Variables/features.**
+
+| Role | Variable | Source | Type |
+|------------------|------------------|--------------------|------------------|
+| Outcome | Intention to use the digital loyalty program | Survey (multi-item, 5-point Likert) | Interval (composite) |
+| Predictor | Perceived usefulness | Survey (multi-item) | Interval (composite) |
+| Predictor | Perceived ease of use | Survey (multi-item) | Interval (composite) |
+| Predictor | Trust in purchase data handling | Survey (multi-item) | Interval (composite) |
+| Control | Visit frequency | Survey | Ordinal |
+| Control | Current punch card use | Survey | Binary |
+| Control | Customer group, demographics | Survey | Categorical |
+| RFM (post-launch) | Recency, frequency, monetary value | Loyalty purchase histories | Ratio |
+
+: Variables for AO4
+
+**Tools and limitations.** Survey data will be analyzed in **R** (haven, psych for alpha and factor analysis, `lm()`, car, and lmtest). Because the predictors and the outcome all come from the same survey, common method bias is a risk. It will be reduced with procedural remedies (anonymous responses, clear and specific items, and separating predictor and outcome items in the questionnaire) and checked statistically with a marker variable. RFM segmentation depends on purchase histories accumulating after launch, so it may extend beyond the CEP timeline.
+
 ## Faculty Lead Approval
 
 ::: callout-important
@@ -95,6 +247,8 @@ Fill in the date and keep these statements only after Dr. Jung has approved them
 **Analytics objective approval.** On \[date\], my faculty lead, Dr. Jae Jung, reviewed and approved my analytics objective, AO3: *Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion*, as appropriate for supporting PO3, *Optimize the Farm Store's websites (cpp.com and the online store) by planning SEO strategies and implementing them.*
 
 **Analytics method approval.** On \[date\], Dr. Jae Jung also approved the analytics methods I will use to address AO3: descriptive conversion funnel analysis by channel, a chi-square test of independence with a two-proportion comparison, logistic regression predicting purchase, and a pre/post comparison if the Farm Store runs a Shopping Ads test, using the GA4 variables described above.
+
+**Team analytics objectives.** The methods for AO1 (Danielle Meza), AO2 (Jungmin Woo), and AO4 (Cecilia Espina) are planned as described above and will be confirmed with Dr. Jung by each AO owner.
 
 ## Task List {.unnumbered}
 
