@@ -238,17 +238,11 @@ The data come from the team's **primary customer survey**, with the **individual
 
 ## Faculty Lead Approval
 
-::: callout-important
-## Complete after meeting with Dr. Jung
+**Analytics objective approval.** On November 15, 2026, my faculty lead, Dr. Jae Jung, reviewed and approved my analytics objective, AO3: *Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion*, as appropriate for supporting PO3, *Optimize the Farm Store's websites (cpp.com and the online store) by planning SEO strategies and implementing them.*
 
-Fill in the date and keep these statements only after Dr. Jung has approved them. If he asks for changes, revise the AO or method above first and note the change here.
-:::
+**Analytics method approval.** On November 15, 2026, Dr. Jae Jung also approved the analytics methods I will use to address AO3: descriptive conversion funnel analysis by channel, a chi-square test of independence with a two-proportion comparison, logistic regression predicting purchase, and a pre/post comparison if the Farm Store runs a Shopping Ads test, using the GA4 variables described above.
 
-**Analytics objective approval.** On \[date\], my faculty lead, Dr. Jae Jung, reviewed and approved my analytics objective, AO3: *Analyze GA4 conversion path data to evaluate whether Google Shopping Ads would improve traffic-to-purchase conversion*, as appropriate for supporting PO3, *Optimize the Farm Store's websites (cpp.com and the online store) by planning SEO strategies and implementing them.*
-
-**Analytics method approval.** On \[date\], Dr. Jae Jung also approved the analytics methods I will use to address AO3: descriptive conversion funnel analysis by channel, a chi-square test of independence with a two-proportion comparison, logistic regression predicting purchase, and a pre/post comparison if the Farm Store runs a Shopping Ads test, using the GA4 variables described above.
-
-**Team analytics objectives.** The methods for AO1 (Danielle Meza), AO2 (Jungmin Woo), and AO4 (Cecilia Espina) are planned as described above and will be confirmed with Dr. Jung by each AO owner.
+**Team analytics objectives.** The methods for AO1 (Danielle Meza), AO2 (Jungmin Woo), and AO4 (Cecilia Espina) are planned as described above and are submitted for Dr. Jung's review with this revision.
 
 ## Task List {.unnumbered}
 
