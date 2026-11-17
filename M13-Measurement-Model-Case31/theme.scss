@@ -1,0 +1,59 @@
+/*-- scss:defaults --*/
+
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600&display=swap');
+
+// Brand palette (same as my portfolio site)
+$burgundy: #6B2737;
+$plum:     #8A4B5E;
+$blush:    #F3D9DC;
+$sky:      #CFE3F1;
+$cream:    #FBF7F1;
+$ink:      #2B2326;
+
+$body-bg: $cream;
+$body-color: $ink;
+$link-color: $burgundy;
+$primary: $burgundy;
+$headings-color: $burgundy;
+$headings-font-family: "Playfair Display", Georgia, serif;
+$font-family-sans-serif: "Inter", "Helvetica Neue", Arial, sans-serif;
+$code-block-bg: #FFFFFF;
+
+/*-- scss:rules --*/
+
+.quarto-title-banner {
+  background: linear-gradient(120deg, $sky 0%, #E9F1F7 50%, $blush 100%);
+  color: $burgundy;
+}
+
+.quarto-title-banner .title {
+  font-family: "Playfair Display", Georgia, serif;
+  color: $burgundy;
+}
+
+.quarto-title-banner .subtitle {
+  font-family: "Inter", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 500;
+  color: $plum;
+}
+
+h1 {
+  border-bottom: 3px solid $blush;
+  padding-bottom: 0.2em;
+}
+
+table thead th {
+  background: $burgundy;
+  color: $cream;
+}
+
+.callout.callout-style-default {
+  border-left-color: $plum;
+}
+
+// Q&A blocks in the practice question section
+.qa-q {
+  font-weight: 600;
+  color: $burgundy;
+  margin-top: 1.2em;
+}

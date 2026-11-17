@@ -1,0 +1,630 @@
+---
+title: "Case 31: Measurement Model Assessment"
+subtitle: "M13 | Confirmatory Factor Analysis with lavaan | Study note and reproducible report"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-title: "Contents"
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    smooth-scroll: true
+    embed-resources: true
+    code-fold: show
+    code-summary: "Show the code"
+    code-copy: true
+    df-print: kable
+    link-external-newwindow: true
+bibliography: references.bib
+csl: american-marketing-association.csl
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Purpose and Case Context
+
+Case 31 describes a survey of **128 members** of the Employees Federal Credit Union (EFCU). Members rated the credit union's employees, its services, and how well it is managed and operated. Most constructs in the case are measured with **one survey item**, but two are measured with **several items**:
+
+- **Attitudes toward employee proficiencies** (Q3 to Q6), and
+- **Attitude toward operational effectiveness** (Q9r, Q10r, Q11, Q12, and Q31 to Q34).
+
+The purpose of this report is to assess the **measurement model** for these two constructs with confirmatory factor analysis (CFA) in the `lavaan` package [@rosseel2012]. The question is not whether one construct affects another; it is whether the survey items measure the two constructs well enough to be used in a later structural model.
+
+::: callout-note
+## What this report does and does not do
+
+CFA evaluates **measurement**: do the items reflect the latent constructs they are supposed to reflect? It does **not** test the Case 31 hypotheses (for example, H1 to H5). Those are structural questions that come after the measurement model is accepted [@anderson1988].
+:::
+
+# Learning Notes: CFA and Measurement Models
+
+| Concept | What it means |
+|-------------------|-----------------------------------------------------|
+| **Latent construct** | A concept that cannot be observed directly (for example, an attitude). It is inferred from several survey items. |
+| **Indicator** | An observed survey item that is expected to reflect the latent construct. |
+| **Reflective measurement** | The construct causes the item responses, so the items should correlate with each other. This is the CFA logic. |
+| **EFA vs. CFA** | EFA lets the data suggest how many factors there are and which items load on them. CFA tests a structure that the researcher specifies **in advance**. |
+| **Standardized loading** | The correlation between an item and its factor. Squared, it is the share of the item's variance explained by the factor. |
+| **Identification** | The model must have enough information (known variances and covariances) to estimate every unknown parameter. |
+| **Model fit** | How closely the covariance matrix implied by the model matches the observed covariance matrix. |
+| **Reliability** | Consistency of the items in measuring the same construct (Cronbach's alpha, composite reliability). |
+| **Convergent validity** | The items of one construct share a high proportion of variance (strong loadings, AVE of .50 or higher). |
+| **Discriminant validity** | The construct is empirically distinct from other constructs (Fornell-Larcker criterion, HTMT). |
+
+: Key CFA vocabulary
+
+::: callout-tip
+## Rules of thumb used in this report
+
+- **Loadings:** .70 or higher is strong; .50 is the usual minimum [@hair2019; @byrne2016] (see @tbl-loading-guide).
+- **Fit:** CFI and TLI of .95 or higher is good (.90 acceptable); RMSEA of .06 or lower is good (.08 acceptable); SRMR of .08 or lower [@hu1999].
+- **Reliability and convergence:** composite reliability (CR) of .70 or higher and average variance extracted (AVE) of .50 or higher [@fornell1981; @hair2019].
+- **Discriminant validity:** the square root of each AVE should be larger than the factor correlation [@fornell1981], and HTMT should be below .85 [@henseler2015].
+
+These are guidelines, not pass/fail rules. Each result is interpreted together with the item content.
+:::
+
+| Standardized loading (Std.all) | Interpretation | Recommendation |
+|-------------------|-------------------|----------------------------------|
+| .70 or higher | Strong | Very desirable; item is a good indicator |
+| .60 to .69 | Moderate to strong | Acceptable, especially with theoretical justification |
+| .50 to .59 | Moderate | Can be retained, but monitor for redundancy or model fit issues |
+| .40 to .49 | Weak | Questionable; keep only if theoretically essential |
+| Below .40 | Very weak | Consider removing unless crucial conceptually |
+
+: General guidelines for factor loading size
+
+# Case 31 Constructs and Indicators
+
+## Multi-item constructs (the CFA factors)
+
+| Factor (lavaan name) | Item | Wording | Response format |
+|------------------|------------------|------------------|------------------|
+| **Employee_Proficiencies** | Q3 | Employees are courteous | 5-point agreement (1 = strongly disagree, 5 = strongly agree) |
+|  | Q4 | Employees are helpful | 5-point agreement |
+|  | Q5 | Employees are professional | 5-point agreement |
+|  | Q6 | Employees are available | 5-point agreement |
+| **Operational_Effectiveness** | Q9r | Statements received: frequency | 5-point frequency (too often to never), reverse-coded |
+|  | Q10r | Statement accuracy | 4-point rating (excellent to poor), reverse-coded |
+|  | Q11rc | Statement easy to understand? | Yes/no, recoded 1 = yes, 0 = no |
+|  | Q12rc | Accounts maintained confidential? | Yes/no, recoded 1 = yes, 0 = no |
+|  | Q31 | CU personnel keep my financial information confidential | 5-point agreement |
+|  | Q32 | CU is prompt in processing loan applications | 5-point agreement |
+|  | Q33 | CU's financial services meet the needs of members | 5-point agreement |
+|  | Q34 | CU loan applications are simple and easy to complete | 5-point agreement |
+
+: Indicators of the two latent constructs
+
+## Single-item constructs (not part of this CFA)
+
+Other Case 31 constructs, such as awareness of individual services (Q13 to Q26), opinions on loan and savings rates (Q7, Q8, Q30), and member residence (Q38), are measured with **one item each**. A latent factor needs **at least two (and ideally three or more) indicators** to separate true construct variance from measurement error. With a single item, the factor and the item are the same thing, so the model would have no information to estimate measurement error, and a loading or reliability could not be assessed. These variables are therefore treated as **observed variables**, not latent factors.
+
+# Data Preparation and Reverse Coding
+
+## Load packages and import the data
+
+```{r}
+#| label: setup
+library(haven)      # read SPSS .sav files
+library(dplyr)      # data wrangling
+library(tidyr)      # reshaping
+library(lavaan)     # CFA
+library(psych)      # descriptives and Cronbach's alpha
+library(semPlot)    # path diagrams
+library(knitr)      # tables
+
+efcu_raw <- read_sav("data/Case 31 Data_efcu_4.sav")
+```
+
+## Inspect variable names, types, and observations
+
+```{r}
+#| label: inspect
+dim(efcu_raw)
+names(efcu_raw)
+```
+
+The file has **`r nrow(efcu_raw)` respondents** and `r ncol(efcu_raw)` variables. Item names are lowercase in the data file (`q3`, `q4`, ...). The file already contains recoded versions of several items, including `q9_r` and `q10_r`.
+
+```{r}
+#| label: tbl-types
+#| tbl-cap: "Variable labels, types, and value labels for the CFA items"
+cfa_raw_items <- c("q3", "q4", "q5", "q6", "q9", "q9_r", "q10", "q10_r",
+                   "q11", "q12", "q31", "q32", "q33", "q34")
+
+tibble(
+  Variable = cfa_raw_items,
+  Label    = sapply(efcu_raw[cfa_raw_items], \(x) if (is.null(attr(x, "label"))) "" else attr(x, "label")),
+  Type     = sapply(efcu_raw[cfa_raw_items], \(x) class(x)[1]),
+  `Value labels` = sapply(efcu_raw[cfa_raw_items], \(x) {
+    lab <- attr(x, "labels")
+    if (is.null(lab)) "(none)" else paste0(lab, " = ", names(lab), collapse = "; ")
+  })
+)
+```
+
+## Verify reverse coding
+
+### Q9: statement frequency
+
+The original Q9 runs from **1 = too often** to **5 = never** (3 = about right, 4 = not often enough). In this sample, every member chose either 3 (about right) or 4 (not often enough). The existing `q9_r` variable was created with $q9\_r = 6 - q9$, so a higher score means a more favorable rating (about right = 3, not often enough = 2).
+
+```{r}
+#| label: tbl-q9
+#| tbl-cap: "Verification: original Q9 vs. existing q9_r"
+efcu_raw |>
+  count(Q9_original = as.numeric(q9), q9_r = as.numeric(q9_r)) |>
+  mutate(Check_6_minus_q9 = 6 - Q9_original)
+```
+
+The table confirms that `q9_r` equals 6 minus Q9 for every respondent, so **Q9 is already reverse-coded** in the data file. I use the existing `q9_r` and do **not** reverse it again.
+
+::: callout-warning
+## A conceptual note on Q9
+
+Q9 is not a true agree/disagree scale. "Too often" (1) and "never" (5) are both unfavorable, with "about right" (3) in the middle. Reversing it only works because nobody in this sample chose 1 or 2. This item measures satisfaction with statement **frequency**, which is a different kind of content and format from the other indicators, and this matters later when the model is evaluated.
+:::
+
+### Q10: statement accuracy
+
+The original Q10 runs from **1 = excellent** to **4 = poor**, so a higher raw score means a **worse** rating. The analysis table lists this item as **Q10r**. The existing `q10_r` was created with $q10\_r = 5 - q10$, so 4 = excellent and 1 = poor.
+
+```{r}
+#| label: tbl-q10
+#| tbl-cap: "Verification: original Q10 vs. existing q10_r"
+efcu_raw |>
+  count(Q10_original = as.numeric(q10), q10_r = as.numeric(q10_r)) |>
+  mutate(Check_5_minus_q10 = 5 - Q10_original)
+```
+
+::: callout-important
+## Documented change: Q10r instead of Q10
+
+The assignment's model lists `Q10`, but the Case 31 data-analysis table operationalizes the construct with **Q10r**. Because raw Q10 is coded so that 1 = excellent, using it as is would make its loading negative and point it in the opposite direction from every other indicator. I therefore use the existing **`q10_r`** in the CFA.
+:::
+
+### Q11 and Q12: yes/no items
+
+Q11 and Q12 are coded **1 = yes, 2 = no**, so the favorable answer has the **lower** code. The analysis table lists them as Q11 and **Q12rc** (recoded). Q12 also contains **`r sum(efcu_raw$q12 == 3)`** responses coded 3, which has no value label. Consistent with my earlier Case 31 work, I treat code 3 as **no answer (missing)**. Both items are recoded so that **1 = yes (favorable) and 0 = no**.
+
+```{r}
+#| label: recode
+efcu <- efcu_raw |>
+  zap_labels() |>
+  mutate(
+    q11rc = case_when(q11 == 1 ~ 1, q11 == 2 ~ 0),
+    q12rc = case_when(q12 == 1 ~ 1, q12 == 2 ~ 0, q12 == 3 ~ NA_real_)
+  )
+```
+
+```{r}
+#| label: tbl-q11q12
+#| tbl-cap: "Verification of the Q11 and Q12 recodes"
+bind_rows(
+  efcu |> count(Original = q11, Recoded = q11rc) |> mutate(Item = "Q11 -> q11rc"),
+  efcu |> count(Original = q12, Recoded = q12rc) |> mutate(Item = "Q12 -> q12rc")
+) |>
+  select(Item, Original, Recoded, n)
+```
+
+| Original item | Final name in the CFA | Decision |
+|-------------------|-------------------|----------------------------------|
+| Q3 to Q6 | `q3` to `q6` | No recoding (higher = more favorable) |
+| Q9 | `q9_r` | Already reverse-coded in the file ($6 - q9$); verified, not reversed again |
+| Q10 | `q10_r` | Already reverse-coded in the file ($5 - q10$); used instead of raw Q10 |
+| Q11 | `q11rc` | Recoded 1 = yes, 0 = no |
+| Q12 | `q12rc` | Recoded 1 = yes, 0 = no; code 3 (no answer) set to missing |
+| Q31 to Q34 | `q31` to `q34` | No recoding (higher = more favorable) |
+
+: Final coding decisions
+
+## Missing values
+
+```{r}
+#| label: tbl-missing
+#| tbl-cap: "Missing values for the CFA indicators"
+cfa_items <- c("q3", "q4", "q5", "q6",
+               "q9_r", "q10_r", "q11rc", "q12rc", "q31", "q32", "q33", "q34")
+
+tibble(Item = cfa_items,
+       Missing = colSums(is.na(efcu[cfa_items])),
+       `Percent missing` = round(100 * Missing / nrow(efcu), 1))
+```
+
+Only **Q12rc** has missing values (`r sum(is.na(efcu$q12rc))` respondents, `r round(100 * mean(is.na(efcu$q12rc)), 1)`%), all from the unlabeled "no answer" code. Instead of dropping these members from the whole analysis (listwise deletion), I use **full information maximum likelihood** (`missing = "fiml"` in lavaan). FIML uses all the information each respondent provided, keeps the full sample of `r nrow(efcu)`, and gives less biased estimates than listwise deletion when data are missing at random.
+
+## Descriptive statistics and distributions
+
+```{r}
+#| label: tbl-desc
+#| tbl-cap: "Descriptive statistics for the CFA indicators"
+as.data.frame(describe(efcu[cfa_items]))[, c("n", "mean", "sd", "median", "min", "max", "skew", "kurtosis")] |>
+  round(2)
+```
+
+```{r}
+#| label: fig-dist
+#| fig-cap: "Response distributions for the CFA indicators"
+#| fig-width: 10
+#| fig-height: 6
+efcu |>
+  select(all_of(cfa_items)) |>
+  pivot_longer(everything(), names_to = "Item", values_to = "Response") |>
+  filter(!is.na(Response)) |>
+  mutate(Item = factor(Item, levels = cfa_items)) |>
+  count(Item, Response) |>
+  ggplot2::ggplot(ggplot2::aes(x = factor(Response), y = n)) +
+  ggplot2::geom_col(fill = "#8A4B5E") +
+  ggplot2::facet_wrap(~ Item, scales = "free_x", ncol = 4) +
+  ggplot2::labs(x = "Response value", y = "Number of members") +
+  ggplot2::theme_minimal(base_size = 12)
+```
+
+Key observations before modeling:
+
+- **Employee proficiency items (Q3 to Q6)** are concentrated at 4 and 5, so members are positive and the distributions are negatively skewed.
+- **Q11rc** has almost no variance: `r sum(efcu$q11rc == 1)` of `r nrow(efcu)` members said "yes." An item that nearly everyone answers the same way cannot correlate strongly with anything.
+- **Q9r** has only two observed values, and Q11rc and Q12rc are binary. These items do not meet the continuous, normally distributed assumption of maximum likelihood well.
+
+Because of the skew and the non-continuous items, I use the **robust maximum likelihood estimator (MLR)**, which corrects the chi-square and standard errors for non-normality.
+
+# Hypothesized Measurement Model
+
+## Specification
+
+```{r}
+#| label: model-spec
+measurement_model <- '
+  Employee_Proficiencies    =~ q3 + q4 + q5 + q6
+  Operational_Effectiveness =~ q9_r + q10_r + q11rc + q12rc + q31 + q32 + q33 + q34
+'
+```
+
+- **Employee_Proficiencies** is measured by Q3 to Q6 (courteous, helpful, professional, available).
+- **Operational_Effectiveness** is measured by the statement items (Q9r, Q10r, Q11rc), the confidentiality item (Q12rc), and the agreement items about confidentiality, loan processing, meeting needs, and easy loan applications (Q31 to Q34).
+
+## Why two distinct but related factors?
+
+The two factors are expected to be **distinct** because they describe different things: Employee_Proficiencies is about the **people** members deal with, while Operational_Effectiveness is about the **systems and processes** of the credit union (statements, confidentiality, loans). They are also expected to be **related**, because members who have good experiences with employees are likely to view the institution's operations positively, and employees carry out many of those operations. The model therefore allows the two factors to **correlate**.
+
+## Identification
+
+```{r}
+#| label: identification
+p <- length(cfa_items)
+known <- p * (p + 1) / 2
+free  <- 12 - 2 + 12 + 2 + 1   # loadings (minus 2 fixed) + error variances + factor variances + factor covariance
+c(observed_variables = p, known_moments = known, free_parameters = free, df = known - free)
+```
+
+- Each factor needs a scale. By default, lavaan fixes the **first loading of each factor to 1** (marker-variable method), which sets the factor's metric to that item.
+- With `r p` observed variables there are $`r p` \times `r p + 1` / 2 = `r known`$ unique variances and covariances. The model estimates `r free` parameters (10 free loadings, 12 error variances, 2 factor variances, and 1 factor covariance), leaving **`r known - free` degrees of freedom**. Because df \> 0 and each factor has more than three indicators, the model is **over-identified**, so its fit can be tested.
+
+# R/lavaan Analysis
+
+```{r}
+#| label: fit-model
+fit_h <- cfa(measurement_model, data = efcu,
+             estimator = "MLR", missing = "fiml")
+
+summary(fit_h, fit.measures = TRUE, standardized = TRUE)
+```
+
+::: callout-note
+## About the lavaan warning
+
+lavaan may print a warning that the variance-covariance matrix of the estimates "does not appear to be positive definite," with a smallest eigenvalue extremely close to zero (around $10^{-18}$). A value this small is numerical rounding, not a true identification problem. It is driven by **Q11rc**, which has almost no variance. It is still a signal that this item contributes little information to the model.
+:::
+
+# CFA Results
+
+```{r}
+#| label: helpers
+# helper functions used for every model
+fit_table <- function(fit, label) {
+  fm <- fitMeasures(fit, c("chisq.scaled", "df.scaled", "pvalue.scaled",
+                           "cfi.robust", "tli.robust", "rmsea.robust",
+                           "rmsea.ci.lower.robust", "rmsea.ci.upper.robust", "srmr"))
+  tibble(Model = label,
+         `χ² (scaled)` = round(fm["chisq.scaled"], 2),
+         df = fm["df.scaled"],
+         p = format.pval(fm["pvalue.scaled"], digits = 3, eps = .001),
+         CFI = round(fm["cfi.robust"], 3),
+         TLI = round(fm["tli.robust"], 3),
+         RMSEA = round(fm["rmsea.robust"], 3),
+         `RMSEA 90% CI` = sprintf("[%.3f, %.3f]", fm["rmsea.ci.lower.robust"], fm["rmsea.ci.upper.robust"]),
+         SRMR = round(fm["srmr"], 3))
+}
+
+loading_table <- function(fit) {
+  standardizedSolution(fit) |>
+    filter(op == "=~") |>
+    transmute(Factor = lhs, Item = rhs,
+              `Std. loading` = round(est.std, 3),
+              SE = round(se, 3),
+              z = round(z, 2),
+              p = format.pval(pvalue, digits = 3, eps = .001),
+              `R²` = round(est.std^2, 3),
+              Strength = cut(abs(est.std), c(-Inf, .40, .50, .60, .70, Inf),
+                             labels = c("Very weak", "Weak", "Moderate",
+                                        "Moderate to strong", "Strong"), right = FALSE))
+}
+
+rel_table <- function(fit, data) {
+  ss <- standardizedSolution(fit) |> filter(op == "=~")
+  ss |>
+    group_by(Factor = lhs) |>
+    summarise(Items = n(),
+              alpha = psych::alpha(data[rhs], check.keys = FALSE, warnings = FALSE)$total$raw_alpha,
+              CR  = sum(est.std)^2 / (sum(est.std)^2 + sum(1 - est.std^2)),
+              AVE = mean(est.std^2),
+              `√AVE` = sqrt(AVE), .groups = "drop") |>
+    mutate(across(alpha:`√AVE`, \(x) round(x, 3)))
+}
+
+htmt <- function(data, items1, items2) {
+  r <- abs(cor(data[c(items1, items2)], use = "pairwise.complete.obs"))
+  hetero <- mean(r[items1, items2])
+  mono1  <- mean(r[items1, items1][upper.tri(r[items1, items1])])
+  mono2  <- mean(r[items2, items2][upper.tri(r[items2, items2])])
+  hetero / sqrt(mono1 * mono2)
+}
+```
+
+## Model identification
+
+The model converged normally after `r lavInspect(fit_h, "iterations")` iterations, all error variances are positive, and all standardized loadings are between -1 and 1 (no Heywood cases). With `r fitMeasures(fit_h, "df")` degrees of freedom, the model is over-identified as calculated above.
+
+## Model fit
+
+```{r}
+#| label: tbl-fit-h
+#| tbl-cap: "Fit of the hypothesized two-factor model (robust MLR estimates)"
+fit_h_tab <- fit_table(fit_h, "Hypothesized two-factor model")
+fit_h_tab
+```
+
+```{r}
+#| label: fit-values
+fm_h <- fitMeasures(fit_h, c("chisq.scaled", "df.scaled", "cfi.robust",
+                             "tli.robust", "rmsea.robust", "srmr"))
+```
+
+The hypothesized model **does not fit the data well**:
+
+- The chi-square test is significant ($\chi^2$(`r fm_h["df.scaled"]`) = `r round(fm_h["chisq.scaled"], 2)`, *p* \< .001), meaning the model-implied covariances differ from the observed ones. With only 128 cases the chi-square is not overly sensitive to sample size, so this is meaningful.
+- **CFI = `r round(fm_h["cfi.robust"], 3)`** and **TLI = `r round(fm_h["tli.robust"], 3)`** are well below the .90 acceptable level.
+- **RMSEA = `r round(fm_h["rmsea.robust"], 3)`** is above .08, and its confidence interval does not include .05.
+- **SRMR = `r round(fm_h["srmr"], 3)`** is slightly above the .08 cutoff.
+
+Every fit index points the same way: the proposed structure does not adequately reproduce the relationships among the items.
+
+## Standardized loadings
+
+```{r}
+#| label: tbl-load-h
+#| tbl-cap: "Standardized factor loadings: hypothesized model"
+load_h <- loading_table(fit_h)
+load_h
+```
+
+```{r}
+#| label: fig-path-h
+#| fig-cap: "Path diagram of the hypothesized two-factor model (standardized estimates)"
+#| fig-width: 11
+#| fig-height: 6
+semPaths(fit_h, what = "std", whatLabels = "std", layout = "tree2",
+         nodeLabels = c(cfa_items, "Employee\nProficiencies", "Operational\nEffectiveness"),
+         edge.label.cex = 0.75, edge.label.position = 0.78, label.cex = 1,
+         sizeMan = 6.5, sizeLat = 14, sizeLat2 = 8, shapeLat = "ellipse", nCharNodes = 0,
+         residuals = FALSE, intercepts = FALSE, edge.color = "#6B2737",
+         color = list(lat = "#F3D9DC", man = "#CFE3F1"))
+```
+
+```{r}
+#| label: load-values
+lh <- setNames(load_h$`Std. loading`, load_h$Item)
+oe_items <- c("q9_r", "q10_r", "q11rc", "q12rc", "q31", "q32", "q33", "q34")
+```
+
+**Employee_Proficiencies.** All four loadings are **strong** (`r min(lh[c("q3","q4","q5","q6")])` to `r max(lh[c("q3","q4","q5","q6")])`) and significant (*p* \< .001). Q4 (helpful) is the best indicator. These items clearly represent one common factor.
+
+**Operational_Effectiveness.** The picture is very different:
+
+- Only **Q32** (prompt loan processing, `r lh["q32"]`) reaches the .60 level.
+- **Q33** (`r lh["q33"]`) is weak, and Q10r, Q31, Q11rc, Q34, and Q9r are **very weak** (below .40). Several are not statistically significant.
+- **Q12rc** loads **`r lh["q12rc"]`**, essentially zero and in the **wrong direction**.
+- Only Q32 meets the .50 minimum; the other seven operational items fall below it.
+
+## Reliability and convergent validity
+
+```{r}
+#| label: tbl-rel-h
+#| tbl-cap: "Reliability and convergent validity: hypothesized model"
+rel_h <- rel_table(fit_h, efcu)
+rel_h
+```
+
+```{r}
+#| label: rel-values
+rh <- rel_h |> tibble::column_to_rownames("Factor")
+```
+
+- **Employee_Proficiencies:** Cronbach's alpha (`r rh["Employee_Proficiencies","alpha"]`) and composite reliability (`r rh["Employee_Proficiencies","CR"]`) are well above .70, and the AVE (`r rh["Employee_Proficiencies","AVE"]`) is above .50. On average, the factor explains more than half of the variance in each item. Together with the strong, significant loadings and the clear shared content (all four items describe how employees treat members), this is solid evidence of **internal consistency and convergent validity**.
+- **Operational_Effectiveness:** alpha (`r rh["Operational_Effectiveness","alpha"]`) and CR (`r rh["Operational_Effectiveness","CR"]`) are below .70, and the AVE (`r rh["Operational_Effectiveness","AVE"]`) means the factor explains only about `r round(100 * rh["Operational_Effectiveness","AVE"])`% of the variance in its items. Most of what these items measure is **not** shared. There is **no convergent validity** for this factor as specified.
+
+## Discriminant validity
+
+```{r}
+#| label: tbl-disc-h
+#| tbl-cap: "Discriminant validity: hypothesized model"
+phi_h <- lavInspect(fit_h, "cor.lv")[1, 2]
+ep_items <- c("q3", "q4", "q5", "q6")
+
+tibble(
+  Evidence = c("Factor correlation (φ)",
+               "√AVE: Employee_Proficiencies",
+               "√AVE: Operational_Effectiveness",
+               "HTMT ratio"),
+  Value = round(c(phi_h, rh["Employee_Proficiencies", "√AVE"],
+                  rh["Operational_Effectiveness", "√AVE"],
+                  htmt(efcu, ep_items, oe_items)), 3)
+)
+```
+
+The factor correlation is **`r round(phi_h, 3)`**. That is clearly below 1, so the two factors are not identical. However, the **Fornell-Larcker criterion fails** for Operational_Effectiveness: its √AVE (`r rh["Operational_Effectiveness","√AVE"]`) is **smaller** than the correlation with Employee_Proficiencies. In plain terms, the "operational effectiveness" factor shares more variance with the employee factor than with its own items. The HTMT ratio (`r round(htmt(efcu, ep_items, oe_items), 3)`) is below the .85 cutoff, which on its own would support discriminant validity. The two criteria disagree because HTMT only compares correlations between and within the item sets, and the operational items correlate weakly with **both** sets. The Fornell-Larcker result is the more informative one here, because it uses the AVE and shows how little of each operational item is explained by its own factor. The real problem is not that the two constructs overlap; it is that **Operational_Effectiveness is not a coherent construct to begin with**.
+
+## Diagnosing the problem
+
+### Inter-item correlations
+
+```{r}
+#| label: tbl-oe-cor
+#| tbl-cap: "Correlations among the operational-effectiveness items"
+round(cor(efcu[oe_items], use = "pairwise.complete.obs"), 2)
+```
+
+The correlation matrix shows why the factor fails:
+
+- Most correlations are **below .25**, and several are near zero or negative. Items that measure one construct should correlate moderately with each other.
+- The items cluster by **content and format**. The **statement items** (Q9r, Q10r, Q11rc) correlate with each other (`r round(cor(efcu$q9_r, efcu$q10_r), 2)` to `r round(cor(efcu$q10_r, efcu$q11rc), 2)`), while the agreement items (Q31 to Q34) relate more to each other, especially the two **loan** items (Q32 and Q34, `r round(cor(efcu$q32, efcu$q34), 2)`).
+- **Q12rc correlates negatively with Q31** (`r round(cor(efcu$q12rc, efcu$q31, use = "complete.obs"), 2)`), even though both ask about confidentiality. Members who said "yes, accounts are kept confidential" agreed slightly **less** that personnel keep their information confidential. This is the opposite of what should happen.
+
+::: callout-warning
+## A data-quality flag for Q12
+
+The negative Q12-Q31 relationship suggests that Q12 was either understood differently by respondents (for example, as "Should the CU keep accounts confidential?") or that its coding should be checked against the original questionnaire. Combined with `r sum(is.na(efcu$q12rc))` "no answer" responses, Q12 cannot be scored in the hypothesized direction with confidence.
+:::
+
+### Modification indices (diagnostic only)
+
+```{r}
+#| label: tbl-mi
+#| tbl-cap: "Ten largest modification indices for the hypothesized model"
+modindices(fit_h, sort. = TRUE, maximum.number = 10) |>
+  select(lhs, op, rhs, mi, sepc.all) |>
+  mutate(across(c(mi, sepc.all), \(x) round(x, 2)))
+```
+
+The largest modification indices point to the same content clusters: correlated errors between **Q32 and Q34** (both about **loans**), between **Q10r and Q11rc** and **Q9r and Q11rc** (all about **statements**), and between **Q3 and Q4** (courteous and helpful, two closely related employee behaviors). I do **not** add these correlated errors to the hypothesized model, because doing so only to improve fit would hide the real issue. Instead, the pattern suggests a theoretically meaningful alternative structure, tested below.
+
+### Measurement concerns
+
+1.  **Mixed content.** The eight items cover at least three different topics: account **statements**, **confidentiality**, and **loans and services**. "Operational effectiveness" is a broad umbrella, but a reflective factor assumes one underlying attitude drives all of them.
+2.  **Mixed response formats.** The items use four different formats: a frequency scale (Q9), a 4-point quality rating (Q10), yes/no (Q11, Q12), and 5-point agreement (Q31 to Q34). Items with different formats and ranges correlate less, even when they measure related ideas.
+3.  **Limited variance.** Q11rc (`r round(100 * mean(efcu$q11rc), 1)`% "yes") and Q9r (only two observed values) carry very little information.
+4.  **Possible formative nature.** These items may describe **separate aspects** of operations that together make up a member's overall view (a formative index) rather than **reflect** one attitude. Formative indicators are not expected to correlate, so a reflective CFA is the wrong test for them.
+
+## Alternative model (explicitly labeled)
+
+Based on the content and format clusters above, I estimate one **alternative model** and compare it with the hypothesized model. It is a theory-based respecification, not a fit-driven one:
+
+- **Statement_Quality** (Q9r, Q10r, Q11rc): three items that all ask about the **account statement** (frequency, accuracy, clarity).
+- **Operational_Effectiveness** (Q31 to Q34): the four 5-point **agreement** items, which share one response format and ask about the credit union's practices.
+- **Q12rc is excluded**, not because it lowers fit, but because of the coding and interpretation concern documented above. It should be reviewed before it is used in any analysis.
+- Employee_Proficiencies is unchanged, and no correlated errors are added.
+
+```{r}
+#| label: fit-alt
+alternative_model <- '
+  Employee_Proficiencies    =~ q3 + q4 + q5 + q6
+  Statement_Quality         =~ q9_r + q10_r + q11rc
+  Operational_Effectiveness =~ q31 + q32 + q33 + q34
+'
+fit_a <- cfa(alternative_model, data = efcu, estimator = "MLR", missing = "fiml")
+```
+
+```{r}
+#| label: tbl-fit-compare
+#| tbl-cap: "Fit comparison: hypothesized vs. alternative model"
+bind_rows(fit_h_tab, fit_table(fit_a, "Alternative three-factor model (Q12rc excluded)"))
+```
+
+```{r}
+#| label: tbl-load-a
+#| tbl-cap: "Standardized factor loadings: alternative model"
+load_a <- loading_table(fit_a)
+load_a
+```
+
+```{r}
+#| label: tbl-rel-a
+#| tbl-cap: "Reliability and convergent validity: alternative model"
+rel_a <- rel_table(fit_a, efcu)
+rel_a
+```
+
+```{r}
+#| label: tbl-phi-a
+#| tbl-cap: "Factor correlations: alternative model"
+ss_a <- standardizedSolution(fit_a) |>
+  filter(op == "~~", lhs != rhs) |>
+  transmute(`Factor pair` = paste(lhs, "with", rhs),
+            r = round(est.std, 3), SE = round(se, 3),
+            p = format.pval(pvalue, digits = 3, eps = .001))
+ss_a
+fm_a <- fitMeasures(fit_a, c("chisq.scaled", "df.scaled", "cfi.robust",
+                             "tli.robust", "rmsea.robust", "srmr"))
+la <- setNames(load_a$`Std. loading`, load_a$Item)
+ra <- rel_a |> tibble::column_to_rownames("Factor")
+```
+
+**Comparison.** The two models are **not nested** (the alternative drops Q12rc), so a chi-square difference test and AIC/BIC comparisons are not appropriate. Comparing the fit indices descriptively, the alternative model fits **better** (CFI `r round(fm_a["cfi.robust"], 3)` vs. `r round(fm_h["cfi.robust"], 3)`, RMSEA `r round(fm_a["rmsea.robust"], 3)` vs. `r round(fm_h["rmsea.robust"], 3)`, SRMR `r round(fm_a["srmr"], 3)` vs. `r round(fm_h["srmr"], 3)`), but it is still **below the conventional standards** for good fit (CFI and TLI under .95, and TLI under .90).
+
+What the alternative model shows:
+
+- **Statement_Quality** forms a recognizable but weak factor. Its loadings (`r min(la[c("q9_r","q10_r","q11rc")])` to `r max(la[c("q9_r","q10_r","q11rc")])`) are significant, but the CR (`r ra["Statement_Quality","CR"]`) and AVE (`r ra["Statement_Quality","AVE"]`) are low, partly because Q9r and Q11rc have so little variance.
+- **Operational_Effectiveness (Q31 to Q34)** remains problematic. Only Q32 loads strongly (`r la["q32"]`); the other three loadings are weak to very weak (`r min(la[c("q31","q33","q34")])` to `r max(la[c("q31","q33","q34")])`), and the loadings for this factor have **large standard errors and are not statistically significant**. This repeats my earlier EFA finding for R6, where Q31 to Q34 produced a Heywood case and an alpha well below .70. These four items do not share enough variance to define a stable factor.
+
+The respecification makes the problem easier to see, but it does **not** fix it. The operational-effectiveness items still do not behave like reflective indicators of one construct.
+
+# Interpretation and Conclusion
+
+::: callout-important
+## Is the two-factor measurement model defensible for a structural model?
+
+**Only in part.** Employee_Proficiencies is well measured and ready for structural analysis. Operational_Effectiveness, as specified, is **not** defensible as a single latent factor.
+:::
+
+**Strongest evidence supporting the model.** Employee_Proficiencies (Q3 to Q6) has strong, significant loadings (`r min(lh[c("q3","q4","q5","q6")])` to `r max(lh[c("q3","q4","q5","q6")])`), composite reliability of `r rh["Employee_Proficiencies","CR"]`, and AVE of `r rh["Employee_Proficiencies","AVE"]`. Its items have consistent content and the same response format. This factor shows internal consistency and convergent validity, and it remained stable across both models.
+
+**Most important limitation.** The hypothesized model fits poorly (CFI = `r round(fm_h["cfi.robust"], 3)`, RMSEA = `r round(fm_h["rmsea.robust"], 3)`), and the problem is concentrated in Operational_Effectiveness: weak and non-significant loadings, AVE of `r rh["Operational_Effectiveness","AVE"]`, failed Fornell-Larcker test, and an item (Q12rc) that loads in the wrong direction. Its indicators mix different content (statements, confidentiality, loans) and four different response formats.
+
+**Constructs that need a qualification.** Operational_Effectiveness needs a strong qualification. The evidence suggests that its items describe **separate aspects** of operations rather than one shared attitude. Any composite score from these items should be described as an index of distinct operational ratings, not as a validated reflective scale. The confidentiality item Q12 needs its coding and wording checked before it is used at all.
+
+**What should happen before testing structural hypotheses:**
+
+1.  **Verify Q12** against the original questionnaire and codebook, including what code 3 means.
+2.  **Decide how to treat the operational items:** as **single-item observed variables**, as a **formative index**, or as smaller content-based factors (for example, statement quality and loan processing) once more items are available.
+3.  **Improve measurement in future surveys:** write at least three or four agreement items per operational aspect, using **one consistent response format**, so each aspect can be tested as a reflective factor.
+4.  **Consider estimators for categorical data** (for example, WLSMV with the items declared as ordered) if binary and short-scale items are kept.
+5.  Only after an acceptable measurement model is established should a structural model test relationships between Employee_Proficiencies and other constructs [@anderson1988].
+
+These conclusions are about **measurement quality only**. Nothing in this CFA shows that employee proficiency causes or influences any operational outcome.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+# Appendix: Reproducibility and Publication Links {.unnumbered}
+
+- **GitHub repository:** <https://github.com/jukedz/ibm6500-assignments/tree/main/M13-Measurement-Model-Case31>
+- **Published report (GitHub Pages):** <https://jukedz.github.io/ibm6500-assignments/M13-Measurement-Model-Case31/case31-measurement-model.html>
+- **Files:** the final Quarto source file is `case31-measurement-model.qmd`, and the rendered report is `case31-measurement-model.html`. The data file is `data/Case 31 Data_efcu_4.sav`.
+- **Verification:** I opened the published GitHub Pages report in a private browser window and confirmed that the page and both links above work.
+
+```{r}
+#| label: session
+#| code-fold: true
+sessionInfo()
+```
