@@ -1,0 +1,514 @@
+---
+title: "Case 31: Structural Model and Hypothesis Testing"
+subtitle: "M15 | Step 2 of the two-step SEM approach | Study note and reproducible report"
+author: "Julieta Diaz"
+date: today
+date-format: long
+title-block-banner: true
+format:
+  html:
+    theme:
+      - cosmo
+      - theme.scss
+    toc: true
+    toc-title: "Contents"
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    smooth-scroll: true
+    embed-resources: true
+    code-fold: show
+    code-summary: "Show the code"
+    code-copy: true
+    df-print: kable
+    link-external-newwindow: true
+bibliography: references.bib
+csl: american-marketing-association.csl
+execute:
+  warning: false
+  message: false
+editor: visual
+---
+
+# Purpose and Case Context
+
+Case 31 describes a survey of **128 members** of the Employees Federal Credit Union (EFCU). The case asks how members evaluate the credit union's employees, services, management, and operations. This report is **Step 2** of the two-step approach to SEM [@anderson1988]: after assessing the measurement model in M13 (Step 1), I now estimate a **structural model** that tests relationships among the constructs.
+
+The model combines **latent variables** (constructs measured by several items) with **observed single-item variables**, and it estimates an **indirect association** between employee proficiencies and members' overall evaluation of the credit union's management and operation.
+
+::: callout-important
+## How Step 1 shaped this model
+
+In M13, **Employee Proficiencies** (Q3 to Q6) showed strong loadings, reliability, and convergent validity, but **Operational Effectiveness** (eight items) did not: most loadings were below .50, the AVE was very low, and the factor failed the Fornell-Larcker test. Following Dr. Jung's guidance on the two-step approach, Step 2 should not proceed with a construct that failed Step 1. The primary model therefore keeps Employee Proficiencies as a **latent** variable and represents operational effectiveness with the **single best item**, chosen on theoretical and empirical grounds (@sec-item-selection). For transparency, I also estimate the assignment's recommended full latent model as a **reference model** and an **item-level H5 model** as an alternative.
+:::
+
+# Learning Notes: Structural Equation Modeling
+
+| Concept | Meaning |
+|-------------------|-----------------------------------------------------|
+| **Two-step approach** | Step 1: establish an acceptable measurement model (fit, reliability, convergent and discriminant validity). Step 2: add structural paths [@anderson1988] |
+| **Measurement model** | Links latent constructs to their indicators (`=~`) |
+| **Structural model** | Directional paths among constructs and observed variables (`~`) |
+| **Latent vs. observed variable** | A latent variable is inferred from several indicators and corrects for measurement error; a single item enters the model as an observed variable |
+| **Exogenous vs. endogenous** | Exogenous variables are not predicted by anything in the model; endogenous variables have at least one arrow pointing to them |
+| **Indirect effect** | The product of paths through an intervening variable ($a \times b$); the **total** effect is the direct effect plus the indirect effect |
+| **Control variable** | A variable included so that the focal paths are estimated holding it constant, not because it is the main interest |
+
+: Key SEM concepts used in this report
+
+::: callout-tip
+## Fit guidelines
+
+CFI and TLI of .95 or higher (.90 acceptable), RMSEA of .06 or lower (.08 acceptable), and SRMR of .08 or lower [@hu1999]. These are guidelines; fit is judged from the overall pattern.
+:::
+
+# Case 31 Hypotheses and Model Rationale
+
+The Case 31 data-analysis table contains the research questions and hypotheses below that bear on this model (wording from the table key).
+
+| Label | Case 31 wording (summarized) | Role in this SEM |
+|------------------|------------------------------|-------------------------|
+| **R3** | Members' attitudes and beliefs about employee proficiencies | Employee Proficiencies as a focal latent construct |
+| **R6** | Members' attitudes about how effectively the credit union is operated (Q9r to Q12rc, Q31 to Q34, Q37r) | Operational effectiveness (Q32) and the overall evaluation (Q37r) as outcomes |
+| **R4** | Differences between members who live in the headquarters area and elsewhere in (a) attitude toward employee proficiencies and (c) operational effectiveness | Residence (Q38) as a predictor of Employee Proficiencies, Q32, and Q37r |
+| **H3a / H4** | Loan status (Q27) is expected to shape evaluations of services and loan rates (H3a: loan use and residence on adequacy of services; H4: members without a loan see rates less favorably) | Loan status (Q27) as a control for Q32 and Q37r |
+| **H5a-H5d** | Confidentiality (Q31), loan processing promptness (Q32), adequacy of services (Q33), and application simplicity (Q34) **positively** influence overall attitude toward the CU's management and operation (Q37r) | Item-level rationale: H5b links Q32 to Q37r; all four are tested in the alternative item-level model |
+
+: Case 31 research questions and hypotheses used in the model
+
+::: callout-note
+## A note on hypothesis labels
+
+The assignment instructions refer to the loan-status and residence hypotheses as H1 and H2. In the Case 31 data-analysis table key used in this course, the loan-status hypotheses are labeled **H3a** and **H4**, so I use the table's labels. The loan-status and residence comparisons in H3a and H4 were designed as group-comparison tests; here they serve only to justify including Q27 as a control.
+:::
+
+## Hypotheses Tested in the Structural Model
+
+| Hypothesis / RQ | Predictor | Outcome | Variable type | Expected direction | Planned test |
+|------------|------------|------------|------------|------------|------------|
+| **HM1** (R3/R6) | Employee Proficiencies | Operational effectiveness (Q32) | Latent → observed | Positive | Structural path *a* |
+| **HM2** (H5b) | Operational effectiveness (Q32) | Overall evaluation (Q37r) | Observed → observed | Positive | Structural path *b* |
+| **HM3** (R3/R6) | Employee Proficiencies | Overall evaluation (Q37r) | Latent → observed | Positive | Structural path *c′* (direct) |
+| **HM4** (R3/R6, H5b) | Employee Proficiencies, through Q32 | Overall evaluation (Q37r) | Latent → observed → observed | Positive | Indirect effect $a \times b$ (bootstrap CI) |
+| **R4a** | Residence (Q38) | Employee Proficiencies | Observed → latent | Non-directional | Structural path |
+| **R4c** | Residence (Q38) | Q32 and Q37r | Observed → observed | Non-directional | Structural paths |
+| **H3a/H4** (control) | Loan status (Q27) | Q32 and Q37r | Observed → observed | Non-directional | Structural paths |
+
+: Hypotheses and planned tests
+
+R3 and R6 are descriptive research questions in the case. I reformulate them as directional hypotheses (HM1, HM3, HM4) because the case treats employee proficiencies and operations as evaluations of the same institution, and members who see employees as courteous, helpful, professional, and available are expected to view the institution's operations and overall management more favorably. HM2 is the case's own H5b.
+
+# Constructs, Indicators, and Variable Roles
+
+| Construct / variable | Items | Type in the primary model | Role |
+|------------------|------------------|------------------|------------------|
+| **Employee_Proficiencies** | Q3 courteous, Q4 helpful, Q5 professional, Q6 available (5-point agreement) | Latent | Focal predictor (endogenous only to residence, for R4a) |
+| **Operational effectiveness (Q32)** | Q32: "CU is prompt in processing loan applications" (5-point agreement) | Observed single item | Focal mediator (endogenous) |
+| **Q37r** | Overall rating of the credit union's management and operation, reverse-coded (1 = very poor, 5 = excellent) | Observed single item | Outcome (endogenous) |
+| **loan_yes** (Q27) | Currently has a loan with the CU (1 = yes, 0 = no) | Observed, exogenous | Control |
+| **hq_resident** (Q38) | Lives in the headquarters area (1 = yes, 0 = no) | Observed, exogenous | Grouping-related predictor (R4) |
+
+: Variable roles in the primary model
+
+## Choosing the Operational-Effectiveness Item {#sec-item-selection}
+
+Dr. Jung's guidance is to choose the item that can be justified **both theoretically and empirically**: its meaning should match the construct definition, and its loading should be the strongest relative to the other items in the two-factor or one-factor CFA. The loadings are re-estimated below with the same decisions as M13.
+
+```{r}
+#| label: setup
+library(haven)    # read SPSS data
+library(dplyr)    # data preparation
+library(lavaan)   # SEM
+library(semPlot)  # path diagrams
+library(knitr)    # tables
+
+efcu_raw <- read_sav("data/Case 31 Data_efcu_4.sav")
+
+efcu <- efcu_raw |>
+  zap_labels() |>
+  mutate(
+    q11rc       = case_when(q11 == 1 ~ 1, q11 == 2 ~ 0),             # 1 = yes
+    q12rc       = case_when(q12 == 1 ~ 1, q12 == 2 ~ 0),             # code 3 (no answer) -> NA
+    loan_yes    = case_when(q27 == 1 ~ 1, q27 == 2 ~ 0),             # Q27: 1 = has a CU loan
+    hq_resident = case_when(q38 == 1 ~ 1, q38 == 2 ~ 0),             # Q38: 1 = headquarters area
+    Q37r        = Q37_r                                              # 1 = very poor ... 5 = excellent
+  )
+```
+
+```{r}
+#| label: tbl-item-selection
+#| tbl-cap: "Standardized loadings of the operational-effectiveness items in the two-factor and one-factor CFA models (M13 specification)"
+oe_items <- c("q9_r", "q10_r", "q11rc", "q12rc", "q31", "q32", "q33", "q34")
+
+two_factor <- cfa('
+  Employee_Proficiencies    =~ q3 + q4 + q5 + q6
+  Operational_Effectiveness =~ q9_r + q10_r + q11rc + q12rc + q31 + q32 + q33 + q34',
+  data = efcu, estimator = "MLR", missing = "fiml")
+
+one_factor <- cfa('Operational_Effectiveness =~ q9_r + q10_r + q11rc + q12rc + q31 + q32 + q33 + q34',
+  data = efcu, estimator = "MLR", missing = "fiml")
+
+get_load <- function(fit) {
+  standardizedSolution(fit) |>
+    filter(op == "=~", lhs == "Operational_Effectiveness") |>
+    select(Item = rhs, est.std, pvalue)
+}
+
+item_wording <- c(q9_r = "Statement frequency (reversed)", q10_r = "Statement accuracy (reversed)",
+                  q11rc = "Statement easy to understand (yes/no)", q12rc = "Accounts kept confidential (yes/no)",
+                  q31 = "Personnel keep information confidential", q32 = "Prompt in processing loan applications",
+                  q33 = "Services meet members' needs", q34 = "Loan applications simple and easy")
+
+left_join(get_load(two_factor), get_load(one_factor), by = "Item", suffix = c("_two", "_one")) |>
+  transmute(Item, Wording = item_wording[Item],
+            `Two-factor loading` = round(est.std_two, 3),
+            `p (two-factor)` = format.pval(pvalue_two, digits = 2, eps = .001),
+            `One-factor loading` = round(est.std_one, 3),
+            `p (one-factor)` = format.pval(pvalue_one, digits = 2, eps = .001))
+
+lt <- get_load(two_factor); lt <- setNames(round(lt$est.std, 3), lt$Item)
+lo <- get_load(one_factor); lo <- setNames(round(lo$est.std, 3), lo$Item)
+fit_one <- fitMeasures(one_factor, c("cfi.robust", "rmsea.robust"))
+```
+
+**Decision: Q32 (loan application promptness).**
+
+- **Empirical justification.** In the hypothesized two-factor model, Q32 has by far the strongest loading (**`r lt["q32"]`**, *p* \< .001) and is the **only** item above the .50 minimum; the next highest is Q33 (`r lt["q33"]`). In the one-factor model, Q10r loads highest (`r lo["q10_r"]`), but that model fits very poorly (robust CFI = `r round(fit_one["cfi.robust"], 3)`, RMSEA = `r round(fit_one["rmsea.robust"], 3)`) and its factor is defined mostly by the three statement items, so it does not represent the intended construct well. The two-factor model, which is the model hypothesized in M13, is the more relevant basis. No item reaches the ideal .70, so a two-item latent variable is not justified either.
+- **Theoretical justification.** Operational effectiveness is members' attitude toward **how effectively the credit union is operated**. Promptness in processing loan applications describes an operating process and its efficiency directly, whereas the statement items describe one document, and Q31 and Q33 are closer to trust and service fit. Q32 is also the item named in **H5b** as a driver of the overall evaluation (Q37r).
+- **Consequence.** Q32 enters the model as an **observed** variable, so its measurement error is not corrected. A sensitivity check with Q10r is reported in @sec-sensitivity.
+
+# Data Preparation
+
+```{r}
+#| label: tbl-coding
+#| tbl-cap: "Verification of recoded variables"
+bind_rows(
+  efcu |> count(Original = q27, Recoded = loan_yes) |> mutate(Variable = "Q27 -> loan_yes"),
+  efcu |> count(Original = q38, Recoded = hq_resident) |> mutate(Variable = "Q38 -> hq_resident"),
+  efcu |> count(Original = q37, Recoded = Q37r) |> mutate(Variable = "Q37 -> Q37r")
+) |> select(Variable, Original, Recoded, n)
+```
+
+- **Q9r and Q10r** were already reverse-coded in the file ($6 - Q9$ and $5 - Q10$), as verified in M13.
+- **Q27 and Q38** were coded 1 = yes, 2 = no. I recoded them to **0/1 dummy variables** (1 = yes), so the reference category is "no loan" and "lives elsewhere," and each coefficient compares the "yes" group with the "no" group.
+- **Q37r** was already reverse-coded in the file ($6 - Q37$, so 5 = excellent). The `r sum(is.na(efcu$Q37r))` members who chose "no opinion" (code 6) are missing.
+- No variables were centered or transformed.
+
+```{r}
+#| label: tbl-missing
+#| tbl-cap: "Missing values for the model variables"
+model_vars <- c("q3", "q4", "q5", "q6", "q32", "Q37r", "loan_yes", "hq_resident")
+tibble(Variable = model_vars,
+       Missing = colSums(is.na(efcu[model_vars])),
+       Min = sapply(efcu[model_vars], min, na.rm = TRUE),
+       Max = sapply(efcu[model_vars], max, na.rm = TRUE))
+```
+
+Only Q37r has missing values. As in M13, I use **full information maximum likelihood** (`missing = "fiml"`) so all `r nrow(efcu)` members are kept, and the **robust maximum likelihood estimator (MLR)** because the Likert items are skewed. All values are within their valid ranges.
+
+# Proposed Structural Model
+
+```{mermaid}
+%%| fig-cap: "Proposed primary model. Ovals are latent variables, rectangles are observed variables; solid arrows are focal hypotheses and dashed arrows are controls or residence comparisons"
+flowchart LR
+  RES["hq_resident<br/>Q38"]
+  LOAN["loan_yes<br/>Q27"]
+  EP(["Employee<br/>Proficiencies"])
+  Q3["Q3"] & Q4["Q4"] & Q5["Q5"] & Q6["Q6"]
+  OE["Operational<br/>effectiveness<br/>Q32"]
+  Y["Overall evaluation<br/>Q37r"]
+  EP --> Q3 & Q4 & Q5 & Q6
+  EP -- "a: HM1 (+)" --> OE
+  OE -- "b: HM2 / H5b (+)" --> Y
+  EP -- "c': HM3 (+)" --> Y
+  RES -. "R4a" .-> EP
+  RES -. "R4c" .-> OE
+  RES -. "R4c" .-> Y
+  LOAN -. "control" .-> OE
+  LOAN -. "control" .-> Y
+```
+
+**Why each path is included:**
+
+- **Employee Proficiencies → Q32 (*a*, HM1):** employees carry out the credit union's operations, so members who rate employees highly are expected to see operations, such as loan processing, as more effective.
+- **Q32 → Q37r (*b*, HM2):** this is H5b from the case: loan processing promptness positively influences the overall attitude toward the credit union's management and operation.
+- **Employee Proficiencies → Q37r (*c′*, HM3):** employee interactions are a direct basis for judging how well the credit union is managed, beyond loan processing.
+- **Indirect path (HM4):** combining *a* and *b* gives a theoretically motivated indirect association of employee proficiencies with the overall evaluation through operational effectiveness.
+- **Residence (Q38):** R4 asks whether members in the headquarters area differ in attitudes toward employee proficiencies (R4a) and operational effectiveness (R4c), so residence predicts all three.
+- **Loan status (Q27):** members with a current loan have direct experience with loan processing (the content of Q32) and are the focus of the loan-related hypotheses (H3a, H4), so loan status is included as a **control** for Q32 and Q37r. It is not a focal hypothesis.
+
+# R/lavaan Analysis
+
+## Primary Model (Revised from Step 1)
+
+```{r}
+#| label: model-primary
+sem_model <- '
+  # Measurement model (Step 1: adequate)
+  Employee_Proficiencies =~ q3 + q4 + q5 + q6
+
+  # Structural model
+  Employee_Proficiencies ~ hq_resident                                     # R4a
+  q32  ~ a*Employee_Proficiencies + loan_yes + hq_resident                 # HM1, control, R4c
+  Q37r ~ b*q32 + cprime*Employee_Proficiencies + loan_yes + hq_resident    # HM2 (H5b), HM3, control, R4c
+
+  # Indirect and total effects
+  indirect := a*b
+  total    := cprime + (a*b)
+'
+fit_primary <- sem(sem_model, data = efcu, estimator = "MLR", missing = "fiml")
+summary(fit_primary, fit.measures = TRUE, standardized = TRUE, ci = TRUE)
+```
+
+```{r}
+#| label: bootstrap
+# Bootstrap confidence intervals for the indirect effect (1,000 resamples)
+set.seed(6500)
+fit_boot <- sem(sem_model, data = efcu, estimator = "ML", missing = "fiml",
+                se = "bootstrap", bootstrap = 1000)
+boot_ci <- parameterEstimates(fit_boot, boot.ci.type = "perc", standardized = TRUE) |>
+  filter(label %in% c("a", "b", "cprime", "indirect", "total"))
+```
+
+The primary model is estimated with **MLR and FIML**. Because indirect effects are products of two coefficients and are usually not normally distributed, their confidence intervals come from a **percentile bootstrap** with 1,000 resamples (ML with FIML), as is standard for indirect effects [@preacher2008].
+
+# Results
+
+## Measurement-Model Review
+
+```{r}
+#| label: tbl-loadings
+#| tbl-cap: "Standardized loadings of Employee Proficiencies in the primary model"
+ss <- standardizedSolution(fit_primary)
+ss |> filter(op == "=~") |>
+  transmute(Item = rhs, `Std. loading` = round(est.std, 3), SE = round(se, 3),
+            p = format.pval(pvalue, digits = 3, eps = .001), `R²` = round(est.std^2, 3))
+
+ld <- ss |> filter(op == "=~")
+cr  <- sum(ld$est.std)^2 / (sum(ld$est.std)^2 + sum(1 - ld$est.std^2))
+ave <- mean(ld$est.std^2)
+```
+
+- Employee Proficiencies keeps strong loadings (`r round(min(ld$est.std), 3)` to `r round(max(ld$est.std), 3)`), with composite reliability of **`r round(cr, 3)`** and AVE of **`r round(ave, 3)`**, consistent with M13. This construct is defensible.
+- **Discriminant validity** is no longer a latent-factor comparison, because operational effectiveness is now an observed item. Its correlation with Employee Proficiencies is moderate (see path *a* below), so the two are clearly distinct.
+- **Measurement concern carried forward:** operational effectiveness is represented by **one item**. That item cannot be checked for reliability, and its measurement error is absorbed into the structural paths, which tends to **weaken** the estimated paths involving Q32.
+
+## Structural-Model Fit
+
+```{r}
+#| label: tbl-fit
+#| tbl-cap: "Fit of the primary model (robust MLR estimates)"
+fm <- fitMeasures(fit_primary, c("chisq.scaled", "df.scaled", "pvalue.scaled", "cfi.robust",
+                                 "tli.robust", "rmsea.robust", "rmsea.ci.lower.robust",
+                                 "rmsea.ci.upper.robust", "srmr"))
+tibble(`χ² (scaled)` = round(fm["chisq.scaled"], 2), df = fm["df.scaled"],
+       p = round(fm["pvalue.scaled"], 3), CFI = round(fm["cfi.robust"], 3),
+       TLI = round(fm["tli.robust"], 3), RMSEA = round(fm["rmsea.robust"], 3),
+       `RMSEA 90% CI` = sprintf("[%.3f, %.3f]", fm["rmsea.ci.lower.robust"], fm["rmsea.ci.upper.robust"]),
+       SRMR = round(fm["srmr"], 3))
+r2 <- lavInspect(fit_primary, "rsquare")
+```
+
+The primary model fits the data **well**. The chi-square is not significant ($\chi^2$(`r fm["df.scaled"]`) = `r round(fm["chisq.scaled"], 2)`, *p* = `r round(fm["pvalue.scaled"], 3)`), CFI (`r round(fm["cfi.robust"], 3)`) exceeds .95, TLI (`r round(fm["tli.robust"], 3)`) is just below .95, RMSEA (`r round(fm["rmsea.robust"], 3)`) is within the acceptable range, and SRMR (`r round(fm["srmr"], 3)`) is very good. The model explains **`r round(100 * r2["Q37r"])`%** of the variance in the overall evaluation (Q37r) and **`r round(100 * r2["q32"])`%** of the variance in Q32.
+
+```{r}
+#| label: fig-path
+#| fig-cap: "Estimated primary model (standardized estimates)"
+#| fig-width: 10
+#| fig-height: 6
+semPaths(fit_primary, what = "paths", whatLabels = "std", layout = "tree2", rotation = 2,
+         intercepts = FALSE, residuals = FALSE, edge.label.cex = 0.85,
+         sizeMan = 7, sizeLat = 11, nCharNodes = 0,
+         # label nodes in the order semPlot stores them (checked with semPlotModel(fit)@Vars$name)
+         nodeLabels = c("Q3", "Q4", "Q5", "Q6", "Q32", "Q37r", "HQ res.", "Loan", "Employee\nProficiencies"),
+         edge.color = "#6B2737", color = list(lat = "#F3D9DC", man = "#CFE3F1"))
+```
+
+## Hypothesis Testing
+
+```{r}
+#| label: tbl-hyp
+#| tbl-cap: "Hypothesis-testing results (standardized estimates from MLR; 95% CIs are for the standardized estimates)"
+paths <- ss |> filter(op == "~")
+row_for <- function(lhs, rhs) paths[paths$lhs == lhs & paths$rhs == rhs, ]
+hyp <- tribble(
+  ~Hypothesis, ~lhs, ~rhs, ~Path, ~Expected,
+  "HM1 (R3/R6)", "q32", "Employee_Proficiencies", "Employee Proficiencies → Q32", "Positive",
+  "HM2 (H5b)",   "Q37r", "q32", "Q32 → Q37r", "Positive",
+  "HM3 (R3/R6)", "Q37r", "Employee_Proficiencies", "Employee Proficiencies → Q37r", "Positive",
+  "R4a", "Employee_Proficiencies", "hq_resident", "HQ residence → Employee Proficiencies", "Non-directional",
+  "R4c", "q32", "hq_resident", "HQ residence → Q32", "Non-directional",
+  "R4c", "Q37r", "hq_resident", "HQ residence → Q37r", "Non-directional",
+  "Control (H3a/H4)", "q32", "loan_yes", "Has loan → Q32", "Non-directional",
+  "Control (H3a/H4)", "Q37r", "loan_yes", "Has loan → Q37r", "Non-directional"
+)
+res <- bind_rows(lapply(seq_len(nrow(hyp)), \(i) row_for(hyp$lhs[i], hyp$rhs[i])))
+hyp_tab <- hyp |>
+  mutate(Std = res$est.std, SE = res$se, lo = res$ci.lower, hi = res$ci.upper, p = res$pvalue,
+         Decision = case_when(
+           Expected == "Positive" & p < .05 & Std > 0 ~ "Supported",
+           Expected == "Positive" ~ "Not supported",
+           p < .05 ~ "Significant difference",
+           TRUE ~ "No significant difference"))
+hyp_tab |>
+  transmute(Hypothesis, `Structural path` = Path, `Expected direction` = Expected,
+            `Std. estimate` = round(Std, 3), SE = round(SE, 3),
+            `95% CI` = sprintf("[%.3f, %.3f]", lo, hi),
+            p = format.pval(p, digits = 2, eps = .001), Decision)
+h <- setNames(round(hyp_tab$Std, 3), paste(hyp_tab$lhs, hyp_tab$rhs))
+hp <- setNames(hyp_tab$p, paste(hyp_tab$lhs, hyp_tab$rhs))
+```
+
+**Interpretation:**
+
+- **HM1 (supported).** Members who rate employees as more proficient also rate loan processing as more prompt (β = `r h["q32 Employee_Proficiencies"]`).
+- **HM2 / H5b (supported).** Holding employee proficiencies, loan status, and residence constant, members who see loan processing as more prompt give a higher overall rating of the credit union's management and operation (β = `r h["Q37r q32"]`).
+- **HM3 (supported).** Employee proficiencies have the **strongest** association with the overall evaluation (β = `r h["Q37r Employee_Proficiencies"]`), even after accounting for loan processing.
+- **R4a.** Headquarters-area residents do not differ significantly from other members in their attitudes toward employee proficiencies (β = `r h["Employee_Proficiencies hq_resident"]`, *p* = `r round(hp["Employee_Proficiencies hq_resident"], 3)`).
+- **R4c.** Residence is not significantly related to Q32 (*p* = `r round(hp["q32 hq_resident"], 3)`), but headquarters-area residents give a somewhat **lower** overall evaluation (β = `r h["Q37r hq_resident"]`, *p* = `r round(hp["Q37r hq_resident"], 3)`), holding the other variables constant.
+- **Loan status (control).** Members with a current loan give a somewhat lower overall evaluation (β = `r h["Q37r loan_yes"]`, *p* = `r round(hp["Q37r loan_yes"], 3)`), but do not rate loan processing differently (*p* = `r round(hp["q32 loan_yes"], 3)`).
+
+## Direct, Indirect, and Total Effects
+
+```{r}
+#| label: tbl-effects
+#| tbl-cap: "Direct, indirect, and total effects of Employee Proficiencies on Q37r (standardized; 95% percentile bootstrap CIs, 1,000 resamples)"
+boot_ci |>
+  mutate(Effect = c(a = "a: Employee Proficiencies → Q32", b = "b: Q32 → Q37r",
+                    cprime = "c′: direct effect on Q37r", indirect = "Indirect effect (a × b)",
+                    total = "Total effect (c′ + a × b)")[label]) |>
+  transmute(Effect, Estimate = round(est, 3), `Std. estimate` = round(std.all, 3),
+            `95% bootstrap CI (unstandardized)` = sprintf("[%.3f, %.3f]", ci.lower, ci.upper))
+eff <- setNames(round(boot_ci$std.all, 3), boot_ci$label)
+ci_ind <- boot_ci[boot_ci$label == "indirect", c("ci.lower", "ci.upper")]
+```
+
+- **Direct effect** (β = `r eff["cprime"]`): the association of employee proficiencies with the overall evaluation that does not run through loan processing.
+- **Indirect effect** (β = `r eff["indirect"]`): the part that runs through perceived loan processing promptness. The bootstrap confidence interval \[`r sprintf("%.3f", ci_ind$ci.lower)`, `r sprintf("%.3f", ci_ind$ci.upper)`\] **does not include zero**, so the indirect association is supported.
+- **Total effect** (β = `r eff["total"]`): the indirect path accounts for about **`r round(100 * eff["indirect"] / eff["total"])`%** of the total. This is **partial mediation**: most of the association is direct.
+
+In the Case 31 context, members who view employees as courteous, helpful, professional, and available rate the credit union more favorably overall, and a small part of that is because they also see the credit union as prompt in handling loan applications. Because the data are cross-sectional, this is an **indirect association consistent with the model**, not proof that employee proficiency causes faster loan processing.
+
+## Limited, Theory-Based Model Review
+
+```{r}
+#| label: tbl-mi
+#| tbl-cap: "Five largest modification indices for the primary model (diagnostic only)"
+modindices(fit_primary, sort. = TRUE, maximum.number = 5) |>
+  select(lhs, op, rhs, mi, sepc.all) |> mutate(across(c(mi, sepc.all), \(x) round(x, 2)))
+```
+
+The model already fits well, and no modification index points to a path with a clear basis in the Case 31 theory. The largest suggestions involve residual covariances among the employee items (for example, courteous and helpful, which have similar wording), which were also noted in M13. I do **not** add them, to avoid fit chasing.
+
+### Reference Model: The Assignment's Recommended Full Latent Model
+
+For comparison, the assignment's recommended specification, which keeps all eight items as indicators of a latent Operational Effectiveness factor, is estimated below. It is a **reference model**, not the primary test, because Step 1 showed that this factor is not adequate.
+
+```{r}
+#| label: model-reference
+reference_model <- '
+  Employee_Proficiencies    =~ q3 + q4 + q5 + q6
+  Operational_Effectiveness =~ q9_r + q10_r + q11rc + q12rc + q31 + q32 + q33 + q34
+  Operational_Effectiveness ~ a*Employee_Proficiencies + loan_yes + hq_resident
+  Q37r ~ b*Operational_Effectiveness + cprime*Employee_Proficiencies + loan_yes + hq_resident
+  indirect := a*b
+  total    := cprime + (a*b)
+'
+fit_reference <- sem(reference_model, data = efcu, estimator = "MLR", missing = "fiml")
+```
+
+### Alternative Model: Item-Level H5a-H5d
+
+This model follows the case's original operationalization of H5a-H5d, with Q31 to Q34 as separate observed predictors of Q37r. Because Q31 to Q34 are now predictors, they are **not** also indicators of a latent factor, which avoids the conceptual overlap the assignment warns about. The observed predictors are allowed to correlate with each other (`fixed.x = FALSE`) and with Employee Proficiencies (the `~~` line).
+
+```{r}
+#| label: model-item
+item_level_model <- '
+  Employee_Proficiencies =~ q3 + q4 + q5 + q6
+  Q37r ~ q31 + q32 + q33 + q34 + Employee_Proficiencies + loan_yes + hq_resident
+  Employee_Proficiencies ~~ q31 + q32 + q33 + q34 + loan_yes + hq_resident
+'
+fit_item <- sem(item_level_model, data = efcu, estimator = "MLR", missing = "fiml", fixed.x = FALSE)
+```
+
+```{r}
+#| label: tbl-compare
+#| tbl-cap: "Fit comparison of the primary, reference, and item-level models"
+fit_row <- function(fit, label) {
+  f <- fitMeasures(fit, c("chisq.scaled", "df.scaled", "cfi.robust", "tli.robust", "rmsea.robust", "srmr"))
+  tibble(Model = label, `χ²` = round(f["chisq.scaled"], 2), df = f["df.scaled"],
+         CFI = round(f["cfi.robust"], 3), TLI = round(f["tli.robust"], 3),
+         RMSEA = round(f["rmsea.robust"], 3), SRMR = round(f["srmr"], 3))
+}
+bind_rows(fit_row(fit_primary, "Primary: Employee Proficiencies (latent) + Q32"),
+          fit_row(fit_reference, "Reference: full latent Operational Effectiveness"),
+          fit_row(fit_item, "Alternative: item-level H5a-H5d"))
+```
+
+```{r}
+#| label: tbl-ref-paths
+#| tbl-cap: "Key standardized paths in the reference and item-level models"
+pick <- function(fit, label) {
+  standardizedSolution(fit) |> filter(op %in% c("~", ":="), lhs %in% c("Operational_Effectiveness", "Q37r", "indirect")) |>
+    transmute(Model = label, Path = ifelse(op == ":=", "indirect (a × b)", paste(rhs, "→", lhs)),
+              `Std. estimate` = round(est.std, 3), p = format.pval(pvalue, digits = 2, eps = .001))
+}
+bind_rows(pick(fit_reference, "Reference"), pick(fit_item, "Item-level"))
+fr <- fitMeasures(fit_reference, c("cfi.robust", "rmsea.robust"))
+si <- standardizedSolution(fit_item) |> filter(op == "~")
+si <- setNames(round(si$est.std, 3), si$rhs); pi_ <- standardizedSolution(fit_item) |> filter(op == "~")
+pi_ <- setNames(pi_$pvalue, pi_$rhs)
+```
+
+**Comparison.** The models are not nested, so they are compared descriptively.
+
+- The **reference model** fits poorly (robust CFI = `r round(fr["cfi.robust"], 3)`, RMSEA = `r round(fr["rmsea.robust"], 3)`), and the misfit comes from the measurement part, just as in M13. Its paths look larger, but they are built on a latent factor whose items barely share variance, so they should not be interpreted.
+- The **item-level H5 model** also fits poorly (robust CFI = `r round(fitMeasures(fit_item, "cfi.robust"), 3)`, SRMR = `r round(fitMeasures(fit_item, "srmr"), 3)`). The employee items relate to Q31 to Q34 in ways that a single correlation with the Employee Proficiencies factor does not capture. Within this model, **H5b** is supported (Q32: β = `r si["q32"]`, *p* = `r round(pi_["q32"], 3)`), while H5a (Q31, *p* = `r round(pi_["q31"], 3)`), H5c (Q33, *p* = `r round(pi_["q33"], 3)`), and H5d (Q34, *p* = `r round(pi_["q34"], 3)`) are not supported at the .05 level. Employee proficiencies remain the strongest predictor (β = `r si["Employee_Proficiencies"]`). Because Q31 to Q34 are conceptually related, their separate effects are hard to distinguish, and this model contains no indirect path, so it answers a different question from the primary model.
+- Both comparisons agree with the primary model: **loan processing promptness (H5b) and employee proficiencies** are the clearest correlates of the overall evaluation.
+
+### Sensitivity Check: Q10r as the Single Item {#sec-sensitivity}
+
+```{r}
+#| label: sensitivity
+sens_model <- gsub("q32", "q10_r", sem_model)
+fit_sens <- sem(sens_model, data = efcu, estimator = "MLR", missing = "fiml")
+ss_s <- standardizedSolution(fit_sens)
+sens <- setNames(round(ss_s$est.std, 3), ss_s$label)
+fs <- fitMeasures(fit_sens, c("cfi.robust", "rmsea.robust"))
+p_s <- setNames(ss_s$pvalue, ss_s$label)
+```
+
+Using Q10r (statement accuracy), the strongest item in the one-factor model, gives a path from Employee Proficiencies of `r sens["a"]` and a path to Q37r of `r sens["b"]` (*p* = `r round(p_s["b"], 3)`), with an indirect effect of `r sens["indirect"]` (*p* = `r round(p_s["indirect"], 3)`). The direct effect of Employee Proficiencies (`r sens["cprime"]`) is about the same as in the primary model. Q32 is the more informative choice: it has the stronger theoretical link to H5b and relates more strongly to the overall evaluation.
+
+# Interpretation, Managerial Meaning, and Limitations
+
+**Managerial meaning.**
+
+- **Employees matter most.** Employee proficiencies are the strongest correlate of how members rate the credit union's management and operation. Training and staffing that keep employees courteous, helpful, professional, and available are the clearest lever suggested by these data.
+- **Loan processing speed adds to that picture.** Prompt loan processing is associated with better overall evaluations (H5b), and it carries a small part of the employee association. Streamlining loan processing is a second, concrete operational priority.
+- **Two member groups rate the credit union less favorably overall:** members with current loans and headquarters-area residents. They do not rate employees or loan promptness lower, so the lower overall ratings likely reflect something else (for example, loan rates, which H4 addresses), which management could explore.
+
+**Limitations.**
+
+- **Measurement:** operational effectiveness, as designed, did not form a valid latent construct, so it is represented by a single item with unknown reliability. The results describe **loan processing promptness**, not operational effectiveness as a whole.
+- **Cross-sectional, single-source data:** all variables come from one survey at one time, so the paths are associations, and common method variance may inflate them [@podsakoff2012].
+- **Sample size:** 128 members is small for SEM; standard errors are relatively large and small effects may be missed.
+- **Skewed and single-item outcomes:** Q37r is a single, highly skewed item (most members chose good or excellent), which limits its variance.
+- **Model equivalence:** other models with different directions (for example, overall evaluation shaping perceptions of employees) could fit equally well.
+
+**What would strengthen the conclusions:** a redesigned operational-effectiveness scale with three or more agreement items per aspect in one consistent format, a larger sample, data from a second source or time point (for example, actual loan processing times from records), and multi-group comparisons by residence and loan status.
+
+# Conclusion
+
+Following the two-step approach, the measurement results from M13 shaped this structural model. Employee Proficiencies was retained as a latent construct, and operational effectiveness was represented by its best item, loan processing promptness (Q32). The resulting model fits well and supports all three focal hypotheses: employee proficiencies are positively associated with perceived loan processing promptness (HM1), loan processing promptness is positively associated with the overall evaluation of management and operation (HM2, the case's H5b), and employee proficiencies have a strong direct association with the overall evaluation (HM3). The indirect association through loan processing is significant but small, so most of the employee association is direct. Residence is not related to attitudes toward employees (R4a), but headquarters-area residents and members with loans give somewhat lower overall evaluations. Because of the single-item measures, the single cross-sectional source, and the small sample, these findings should be treated as associations that are consistent with the model rather than as causal effects.
+
+# References {.unnumbered}
+
+::: {#refs}
+:::
+
+# Appendix: Reproducibility and Publication Links {.unnumbered}
+
+- **GitHub repository:** <https://github.com/jukedz/ibm6500-assignments/tree/main/M15-SEM-Hypothesis-Testing-Case31>
+- **Published report (GitHub Pages):** <https://jukedz.github.io/ibm6500-assignments/M15-SEM-Hypothesis-Testing-Case31/case31-sem-hypothesis-testing.html>
+- **Files:** the final Quarto source file is `case31-sem-hypothesis-testing.qmd`, the rendered report is `case31-sem-hypothesis-testing.html`, and the data file is `data/Case 31 Data_efcu_4.sav`.
